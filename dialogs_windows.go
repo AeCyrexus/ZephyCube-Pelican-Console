@@ -48,15 +48,17 @@ func runModalFocus(d *Win, owner, focus uintptr) {
 // ---------- prompt ----------
 
 func promptText(owner uintptr, title, label, def string) (string, bool) {
-	cw, ch := S(440), S(124)
+	lines := strings.Count(label, "\n") + 1
+	lh := S(20) * lines
+	cw, ch := S(460), S(104)+lh
 	d := newDialog(owner, title, cw, ch)
-	lbl := d.Label(label, 0)
+	lbl := d.Ctl("STATIC", strings.ReplaceAll(label, "\n", "\r\n"), SS_NOPREFIX, 0, 0, roleStatic)
 	ed := d.Edit(def, 0, 100)
 	ok := d.Btn("OK", IDOK, kPrimary)
 	cancel := d.Btn("Cancel", IDCANCEL, kNormal)
 	m := S(14)
-	Move(lbl, m, S(10), cw-2*m, S(22))
-	Move(ed, m, S(36), cw-2*m, S(26))
+	Move(lbl, m, S(12), cw-2*m, lh)
+	Move(ed, m, S(18)+lh, cw-2*m, S(26))
 	Move(ok, cw-m-S(200)-S(8), ch-m-S(32), S(100), S(32))
 	Move(cancel, cw-m-S(100), ch-m-S(32), S(100), S(32))
 	SendMessage(ed, EM_SETSEL, 0, ^uintptr(0))
@@ -197,6 +199,9 @@ func (a *App) manageQuick() {
 	bDel := d.Btn("Delete", 302, kDanger)
 	bUp := d.Btn("▲ Up", 303, kNormal)
 	bDown := d.Btn("▼ Down", 304, kNormal)
+	lGroup := d.Label("Group (optional — buttons with the same group are shown together, e.g. Time, Weather)", 0)
+	eGroup := d.Edit("", 0, 308)
+	Muted(lGroup)
 	lName := d.Label("Button label", 0)
 	eName := d.Edit("", 0, 305)
 	lCmd := d.Label("Command(s) — one per line, sent in order", 0)
@@ -220,11 +225,13 @@ func (a *App) manageQuick() {
 	Move(bDown, m+S(115), by+S(38), S(105), S(30))
 	rx := m + lw + S(16)
 	rw := cw - rx - m
-	Move(lName, rx, m, rw, S(20))
-	Move(eName, rx, m+S(22), rw, S(26))
-	Move(lCmd, rx, m+S(58), rw, S(20))
-	Move(eCmd, rx, m+S(80), rw, S(196))
-	Move(help, rx, m+S(284), rw, S(40))
+	Move(lGroup, rx, m, rw, S(20))
+	Move(eGroup, rx, m+S(22), rw, S(26))
+	Move(lName, rx, m+S(56), rw, S(20))
+	Move(eName, rx, m+S(78), rw, S(26))
+	Move(lCmd, rx, m+S(112), rw, S(20))
+	Move(eCmd, rx, m+S(134), rw, S(150))
+	Move(help, rx, m+S(290), rw, S(40))
 	Move(bReset, rx, ch-m-S(32), S(140), S(32))
 	Move(bCancel, cw-m-S(100), ch-m-S(32), S(100), S(32))
 	Move(bOK, cw-m-S(100)*2-S(8), ch-m-S(32), S(100), S(32))
@@ -233,11 +240,14 @@ func (a *App) manageQuick() {
 		out := make([]string, len(items))
 		for i, q := range items {
 			out[i] = q.Name
+			if q.Group != "" {
+				out[i] = q.Group + " › " + q.Name
+			}
 		}
 		return out
 	}
 	enableEditors := func(on bool) {
-		for _, h := range []uintptr{eName, eCmd, bDel, bUp, bDown} {
+		for _, h := range []uintptr{eGroup, eName, eCmd, bDel, bUp, bDown} {
 			Enable(h, on)
 		}
 	}
@@ -250,10 +260,15 @@ func (a *App) manageQuick() {
 			n = "Unnamed"
 		}
 		cmd := strings.TrimSpace(strings.ReplaceAll(GetText(eCmd), "\r\n", "\n"))
-		if items[cur].Name != n {
-			items[cur].Name = n
+		grp := strings.TrimSpace(GetText(eGroup))
+		if items[cur].Name != n || items[cur].Group != grp {
+			items[cur].Name, items[cur].Group = n, grp
+			disp := n
+			if grp != "" {
+				disp = grp + " › " + n
+			}
 			SendMessage(lb, LB_DELETESTRING, uintptr(cur), 0)
-			SendMessageStr(lb, LB_INSERTSTRING, uintptr(cur), n)
+			SendMessageStr(lb, LB_INSERTSTRING, uintptr(cur), disp)
 			SendMessage(lb, LB_SETCURSEL, uintptr(cur), 0)
 		}
 		items[cur].Command = cmd
@@ -262,12 +277,14 @@ func (a *App) manageQuick() {
 		cur = i
 		if i < 0 || i >= len(items) {
 			cur = -1
+			SetText(eGroup, "")
 			SetText(eName, "")
 			SetText(eCmd, "")
 			enableEditors(false)
 			return
 		}
 		SendMessage(lb, LB_SETCURSEL, uintptr(i), 0)
+		SetText(eGroup, items[i].Group)
 		SetText(eName, items[i].Name)
 		SetText(eCmd, strings.ReplaceAll(items[i].Command, "\n", "\r\n"))
 		enableEditors(true)
@@ -292,7 +309,11 @@ func (a *App) manageQuick() {
 		switch id {
 		case 301:
 			store()
-			items = append(items, QuickCmd{Name: "New command"})
+			grp := ""
+			if cur >= 0 && cur < len(items) {
+				grp = items[cur].Group
+			}
+			items = append(items, QuickCmd{Group: grp, Name: "New command"})
 			refill(len(items) - 1)
 			Focus(eName)
 			SendMessage(eName, EM_SETSEL, 0, ^uintptr(0))

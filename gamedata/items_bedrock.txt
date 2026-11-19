@@ -1,0 +1,1952 @@
+acacia_boat|1|Acacia Boat
+acacia_button|64|Acacia Button
+acacia_chest_boat|1|Acacia Boat with Chest
+acacia_door|64|Acacia Door
+acacia_double_slab|64|Acacia Double Slab
+acacia_fence_gate|64|Acacia Fence Gate
+acacia_fence|64|Acacia Fence
+acacia_hanging_sign|16|Acacia Hanging Sign
+acacia_leaves|64|Acacia Leaves
+acacia_log|64|Acacia Log
+acacia_planks|64|Acacia Planks
+acacia_pressure_plate|64|Acacia Pressure Plate
+acacia_sapling|64|Acacia Sapling
+acacia_shelf|64|Acacia Shelf
+acacia_sign|16|Acacia Sign
+acacia_slab|64|Acacia Slab
+acacia_stairs|64|Acacia Stairs
+acacia_standing_sign|64|Acacia Sign
+acacia_trapdoor|64|Acacia Trapdoor
+acacia_wall_sign|64|Acacia Wall Sign
+acacia_wood|64|Acacia Wood
+activator_rail|64|Activator Rail
+agent_spawn_egg|64|Agent Spawn Egg
+allay_spawn_egg|64|Allay Spawn Egg
+allium|64|Allium
+allow|64|Allow
+amethyst_block|64|Block of Amethyst
+amethyst_cluster|64|Amethyst Cluster
+amethyst_shard|64|Amethyst Shard
+ancient_debris|64|Ancient Debris
+andesite_double_slab|64|Andesite Double Slab
+andesite_slab|64|Andesite Slab
+andesite_stairs|64|Andesite Stairs
+andesite_wall|64|Andesite Wall
+andesite|64|Andesite
+angler_pottery_sherd|64|Angler Pottery Sherd
+anvil|64|Anvil
+apple|64|Apple
+archer_pottery_sherd|64|Archer Pottery Sherd
+armadillo_scute|64|Armadillo Scute
+armadillo_spawn_egg|64|Armadillo Spawn Egg
+armor_stand|64|Armor Stand
+arms_up_pottery_sherd|64|Arms Up Pottery Sherd
+arrow|64|Arrow
+axolotl_bucket|1|Bucket of Axolotl
+axolotl_spawn_egg|64|Axolotl Spawn Egg
+azalea_leaves_flowered|64|Flowering Azalea Leaves
+azalea_leaves|64|Azalea Leaves
+azalea|64|Azalea
+azure_bluet|64|Azure Bluet
+baked_potato|64|Baked Potato
+balloon|64|White Balloon
+bamboo_block|64|Block of Bamboo
+bamboo_button|64|Bamboo Button
+bamboo_chest_raft|1|Bamboo Raft with Chest
+bamboo_door|64|Bamboo Door
+bamboo_double_slab|64|Bamboo Double Slab
+bamboo_fence_gate|64|Bamboo Fence Gate
+bamboo_fence|64|Bamboo Fence
+bamboo_hanging_sign|16|Bamboo Hanging Sign
+bamboo_mosaic_double_slab|64|Bamboo Mosaic Double Slab
+bamboo_mosaic_slab|64|Bamboo Mosaic Slab
+bamboo_mosaic_stairs|64|Bamboo Mosaic Stairs
+bamboo_mosaic|64|Bamboo Mosaic
+bamboo_planks|64|Bamboo Planks
+bamboo_pressure_plate|64|Bamboo Pressure Plate
+bamboo_raft|1|Bamboo Raft
+bamboo_sapling|64|Bamboo Sapling
+bamboo_shelf|64|Bamboo Shelf
+bamboo_sign|16|Bamboo Sign
+bamboo_slab|64|Bamboo Slab
+bamboo_stairs|64|Bamboo Stairs
+bamboo_standing_sign|64|Bamboo Sign
+bamboo_trapdoor|64|Bamboo Trapdoor
+bamboo_wall_sign|64|Bamboo Wall Sign
+bamboo|64|Bamboo
+banner_pattern|64|Banner Pattern
+banner|16|Black Banner
+barrel|64|Barrel
+barrier|64|Barrier
+basalt|64|Basalt
+bat_spawn_egg|64|Bat Spawn Egg
+beacon|64|Beacon
+bedrock|64|Bedrock
+bed|1|White Bed
+bee_nest|64|Bee Nest
+bee_spawn_egg|64|Bee Spawn Egg
+beef|64|Raw Beef
+beehive|64|Beehive
+beetroot_seeds|64|Beetroot Seeds
+beetroot_soup|1|Beetroot Soup
+beetroot|64|Beetroot
+bell|64|Bell
+big_dripleaf|64|Big Dripleaf
+birch_boat|1|Birch Boat
+birch_button|64|Birch Button
+birch_chest_boat|1|Birch Boat with Chest
+birch_door|64|Birch Door
+birch_double_slab|64|Birch Double Slab
+birch_fence_gate|64|Birch Fence Gate
+birch_fence|64|Birch Fence
+birch_hanging_sign|16|Birch Hanging Sign
+birch_leaves|64|Birch Leaves
+birch_log|64|Birch Log
+birch_planks|64|Birch Planks
+birch_pressure_plate|64|Birch Pressure Plate
+birch_sapling|64|Birch Sapling
+birch_shelf|64|Birch Shelf
+birch_sign|16|Birch Sign
+birch_slab|64|Birch Slab
+birch_stairs|64|Birch Stairs
+birch_standing_sign|64|Birch Sign
+birch_trapdoor|64|Birch Trapdoor
+birch_wall_sign|64|Birch Wall Sign
+birch_wood|64|Birch Wood
+black_bundle|1|Black Bundle
+black_candle_cake|64|Cake with Black Candle
+black_candle|64|Black Candle
+black_carpet|64|Black Carpet
+black_concrete_double_slab|64|Black Concrete Double Slab
+black_concrete_powder|64|Black Concrete Powder
+black_concrete_slab|64|Black Concrete Slab
+black_concrete_stairs|64|Black Concrete Stairs
+black_concrete|64|Black Concrete
+black_cushion|16|Black Cushion
+black_dye|64|Black Dye
+black_glazed_terracotta|64|Black Glazed Terracotta
+black_harness|1|Black Harness
+black_shulker_box|1|Black Shulker Box
+black_stained_glass_pane|64|Black Stained Glass Pane
+black_stained_glass|64|Black Stained Glass
+black_terracotta|64|Black Terracotta
+black_wool_double_slab|64|Black Wool Double Slab
+black_wool_slab|64|Black Wool Slab
+black_wool_stairs|64|Black Wool Stairs
+black_wool|64|Black Wool
+blackstone_double_slab|64|Blackstone Double Slab
+blackstone_slab|64|Blackstone Slab
+blackstone_stairs|64|Blackstone Stairs
+blackstone_wall|64|Blackstone Wall
+blackstone|64|Blackstone
+blade_pottery_sherd|64|Blade Pottery Sherd
+blast_furnace|64|Blast Furnace
+blaze_powder|64|Blaze Powder
+blaze_rod|64|Blaze Rod
+blaze_spawn_egg|64|Blaze Spawn Egg
+bleach|64|Bleach
+blue_bundle|1|Blue Bundle
+blue_candle_cake|64|Cake with Blue Candle
+blue_candle|64|Blue Candle
+blue_carpet|64|Blue Carpet
+blue_concrete_double_slab|64|Blue Concrete Double Slab
+blue_concrete_powder|64|Blue Concrete Powder
+blue_concrete_slab|64|Blue Concrete Slab
+blue_concrete_stairs|64|Blue Concrete Stairs
+blue_concrete|64|Blue Concrete
+blue_cushion|16|Blue Cushion
+blue_dye|64|Blue Dye
+blue_egg|16|Blue Egg
+blue_glazed_terracotta|64|Blue Glazed Terracotta
+blue_harness|1|Blue Harness
+blue_ice|64|Blue Ice
+blue_orchid|64|Blue Orchid
+blue_shulker_box|1|Blue Shulker Box
+blue_stained_glass_pane|64|Blue Stained Glass Pane
+blue_stained_glass|64|Blue Stained Glass
+blue_terracotta|64|Blue Terracotta
+blue_wool_double_slab|64|Blue Wool Double Slab
+blue_wool_slab|64|Blue Wool Slab
+blue_wool_stairs|64|Blue Wool Stairs
+blue_wool|64|Blue Wool
+board|16|Slate
+boat|64|Boat
+bogged_spawn_egg|64|Bogged Spawn Egg
+bolt_armor_trim_smithing_template|64|Bolt Armor Trim
+bone_block|64|Bone Block
+bone_meal|64|Bone Meal
+bone|64|Bone
+bookshelf|64|Bookshelf
+book|64|Book
+border_block|64|Border
+bordure_indented_banner_pattern|1|Bordure Indented Banner Pattern
+bowl|64|Bowl
+bow|1|Bow
+brain_coral_block|64|Brain Coral Block
+brain_coral_fan|64|Brain Coral Fan
+brain_coral_wall_fan|64|Brain Coral Wall Fan
+brain_coral|64|Brain Coral
+bread|64|Bread
+breeze_rod|64|Breeze Rod
+breeze_spawn_egg|64|Breeze Spawn Egg
+brewer_pottery_sherd|64|Brewer Pottery Sherd
+brewing_stand|64|Brewing Stand
+brick_block|64|Bricks
+brick_double_slab|64|Brick Slab
+brick_slab|64|Brick Slab
+brick_stairs|64|Brick Stairs
+brick_wall|64|Brick Wall
+brick|64|Brick
+brown_bundle|1|Brown Bundle
+brown_candle_cake|64|Cake with Brown Candle
+brown_candle|64|Brown Candle
+brown_carpet|64|Brown Carpet
+brown_concrete_double_slab|64|Brown Concrete Double Slab
+brown_concrete_powder|64|Brown Concrete Powder
+brown_concrete_slab|64|Brown Concrete Slab
+brown_concrete_stairs|64|Brown Concrete Stairs
+brown_concrete|64|Brown Concrete
+brown_cushion|16|Brown Cushion
+brown_dye|64|Brown Dye
+brown_egg|16|Brown Egg
+brown_glazed_terracotta|64|Brown Glazed Terracotta
+brown_harness|1|Brown Harness
+brown_mushroom_block|64|Brown Mushroom Block
+brown_mushroom|64|Brown Mushroom
+brown_shulker_box|1|Brown Shulker Box
+brown_stained_glass_pane|64|Brown Stained Glass Pane
+brown_stained_glass|64|Brown Stained Glass
+brown_terracotta|64|Brown Terracotta
+brown_wool_double_slab|64|Brown Wool Double Slab
+brown_wool_slab|64|Brown Wool Slab
+brown_wool_stairs|64|Brown Wool Stairs
+brown_wool|64|Brown Wool
+brush|1|Brush
+bubble_column|64|Bubble Column
+bubble_coral_block|64|Bubble Coral Block
+bubble_coral_fan|64|Bubble Coral Fan
+bubble_coral_wall_fan|64|Bubble Coral Wall Fan
+bubble_coral|64|Bubble Coral
+bucket|16|Bucket
+budding_amethyst|64|Budding Amethyst
+bundle|1|Bundle
+burn_pottery_sherd|64|Burn Pottery Sherd
+bush|64|Bush
+cactus_flower|64|Cactus Flower
+cactus|64|Cactus
+cake|64|Cake
+calcite|64|Calcite
+calibrated_sculk_sensor|64|Calibrated Sculk Sensor
+camel_husk_spawn_egg|64|Camel Husk Spawn Egg
+camel_spawn_egg|64|Camel Spawn Egg
+campfire|64|Campfire
+candle_cake|64|Cake with Candle
+candle|64|Candle
+carpet|64|Carpet
+carrot_on_a_stick|1|Carrot on a Stick
+carrots|64|Carrots
+carrot|64|Carrot
+cartography_table|64|Cartography Table
+carved_pumpkin|64|Carved Pumpkin
+cat_spawn_egg|64|Cat Spawn Egg
+cauldron|64|Cauldron
+cave_spider_spawn_egg|64|Cave Spider Spawn Egg
+cave_vines_body_with_berries|64|Cave Vines
+cave_vines_head_with_berries|64|Cave Vines
+cave_vines|64|Cave Vines
+chain_command_block|64|Chain Command Block
+chainmail_boots|1|Chainmail Boots
+chainmail_chestplate|1|Chainmail Chestplate
+chainmail_helmet|1|Chainmail Helmet
+chainmail_leggings|1|Chainmail Leggings
+chalkboard|64|Chalkboard
+charcoal|64|Charcoal
+chemical_heat|64|Heat Block
+chemistry_table|64|Chemistry Table
+cherry_boat|1|Cherry Boat
+cherry_button|64|Cherry Button
+cherry_chest_boat|1|Cherry Boat with Chest
+cherry_door|64|Cherry Door
+cherry_double_slab|64|Cherry Double Slab
+cherry_fence_gate|64|Cherry Fence Gate
+cherry_fence|64|Cherry Fence
+cherry_hanging_sign|16|Cherry Hanging Sign
+cherry_leaves|64|Cherry Leaves
+cherry_log|64|Cherry Log
+cherry_planks|64|Cherry Planks
+cherry_pressure_plate|64|Cherry Pressure Plate
+cherry_sapling|64|Cherry Sapling
+cherry_shelf|64|Cherry Shelf
+cherry_sign|16|Cherry Sign
+cherry_slab|64|Cherry Slab
+cherry_stairs|64|Cherry Stairs
+cherry_standing_sign|64|Cherry Sign
+cherry_trapdoor|64|Cherry Trapdoor
+cherry_wall_sign|64|Cherry Wall Sign
+cherry_wood|64|Cherry Wood
+chest_boat|64|Chest Boat
+chest_minecart|1|Minecart with Chest
+chest|64|Chest
+chicken_spawn_egg|64|Chicken Spawn Egg
+chicken|64|Raw Chicken
+chipped_anvil|64|Chipped Anvil
+chiseled_bookshelf|64|Chiseled Bookshelf
+chiseled_cinnabar|64|Chiseled Cinnabar
+chiseled_copper|64|Chiseled Copper
+chiseled_deepslate|64|Chiseled Deepslate
+chiseled_nether_bricks|64|Chiseled Nether Bricks
+chiseled_polished_blackstone|64|Chiseled Polished Blackstone
+chiseled_quartz_block|64|Chiseled Quartz Block
+chiseled_red_sandstone|64|Chiseled Red Sandstone
+chiseled_resin_bricks|64|Chiseled Resin Bricks
+chiseled_sandstone|64|Chiseled Sandstone
+chiseled_stone_bricks|64|Chiseled Stone Bricks
+chiseled_sulfur|64|Chiseled Sulfur
+chiseled_tuff_bricks|64|Chiseled Tuff Bricks
+chiseled_tuff|64|Chiseled Tuff
+chorus_flower|64|Chorus Flower
+chorus_fruit|64|Chorus Fruit
+chorus_plant|64|Chorus Plant
+cinnabar_brick_double_slab|64|Cinnabar Brick Double Slab
+cinnabar_brick_slab|64|Cinnabar Brick Slab
+cinnabar_brick_stairs|64|Cinnabar Brick Stairs
+cinnabar_brick_wall|64|Cinnabar Brick Wall
+cinnabar_bricks|64|Cinnabar Bricks
+cinnabar_double_slab|64|Cinnabar Double Slab
+cinnabar_slab|64|Cinnabar Slab
+cinnabar_stairs|64|Cinnabar Stairs
+cinnabar_wall|64|Cinnabar Wall
+cinnabar|64|Cinnabar
+clay_ball|64|Clay Ball
+clay|64|Clay
+clock|64|Clock
+closed_eyeblossom|64|Closed Eyeblossom
+coal_block|64|Block of Coal
+coal_ore|64|Coal Ore
+coal|64|Coal
+coarse_dirt|64|Coarse Dirt
+coast_armor_trim_smithing_template|64|Coast Armor Trim
+cobbled_deepslate_double_slab|64|Cobbled Deepslate Double Slab
+cobbled_deepslate_slab|64|Cobbled Deepslate Slab
+cobbled_deepslate_stairs|64|Cobbled Deepslate Stairs
+cobbled_deepslate_wall|64|Cobbled Deepslate Wall
+cobbled_deepslate|64|Cobbled Deepslate
+cobblestone_double_slab|64|Cobblestone Slab
+cobblestone_slab|64|Cobblestone Slab
+cobblestone_wall|64|Cobblestone Wall
+cobblestone|64|Cobblestone
+cocoa_beans|64|Cocoa Beans
+cocoa|64|Cocoa
+cod_bucket|1|Bucket of Cod
+cod_spawn_egg|64|Cod Spawn Egg
+cod|64|Raw Cod
+colored_torch_blue|64|Blue Torch
+colored_torch_bp|64|Colored Torch Bp
+colored_torch_green|64|Green Torch
+colored_torch_purple|64|Purple Torch
+colored_torch_red|64|Red Torch
+colored_torch_rg|64|Colored Torch Rg
+command_block_minecart|1|Minecart with Command Block
+command_block|64|Command Block
+comparator|64|Comparator
+compass|64|Compass
+composter|64|Composter
+compound_creator|64|Compound Creator
+compound|64|Salt
+concrete_powder|64|Concrete Powder
+concrete|64|Concrete
+conduit|64|Conduit
+cooked_beef|64|Steak
+cooked_chicken|64|Cooked Chicken
+cooked_cod|64|Cooked Cod
+cooked_mutton|64|Cooked Mutton
+cooked_porkchop|64|Cooked Porkchop
+cooked_rabbit|64|Cooked Rabbit
+cooked_salmon|64|Cooked Salmon
+cookie|64|Cookie
+copper_axe|1|Copper Axe
+copper_bars|64|Copper Bars
+copper_block|64|Block of Copper
+copper_boots|1|Copper Boots
+copper_bulb|64|Copper Bulb
+copper_chain|64|Copper Chain
+copper_chestplate|1|Copper Chestplate
+copper_chest|64|Copper Chest
+copper_door|64|Copper Door
+copper_golem_spawn_egg|64|Copper Golem Spawn Egg
+copper_golem_statue|64|Copper Golem Statue
+copper_grate|64|Copper Grate
+copper_helmet|1|Copper Helmet
+copper_hoe|1|Copper Hoe
+copper_horse_armor|1|Copper Horse Armor
+copper_ingot|64|Copper Ingot
+copper_lantern|64|Copper Lantern
+copper_leggings|1|Copper Leggings
+copper_nautilus_armor|1|Copper Nautilus Armor
+copper_nugget|64|Copper Nugget
+copper_ore|64|Copper Ore
+copper_pickaxe|1|Copper Pickaxe
+copper_shovel|1|Copper Shovel
+copper_spear|1|Copper Spear
+copper_sword|1|Copper Sword
+copper_torch|64|Copper Torch
+copper_trapdoor|64|Copper Trapdoor
+coral_block|64|Coral Block
+coral_fan_dead|64|Coral Fan Dead
+coral_fan|64|Coral Fan
+coral|64|Coral
+cornflower|64|Cornflower
+cow_spawn_egg|64|Cow Spawn Egg
+cracked_deepslate_bricks|64|Cracked Deepslate Bricks
+cracked_deepslate_tiles|64|Cracked Deepslate Tiles
+cracked_nether_bricks|64|Cracked Nether Bricks
+cracked_polished_blackstone_bricks|64|Cracked Polished Blackstone Bricks
+cracked_stone_bricks|64|Cracked Stone Bricks
+crafter|64|Crafter
+crafting_table|64|Crafting Table
+creaking_heart|64|Creaking Heart
+creaking_spawn_egg|64|Creaking Spawn Egg
+creeper_banner_pattern|1|Creeper Charge Banner Pattern
+creeper_head|64|Creeper Head
+creeper_spawn_egg|64|Creeper Spawn Egg
+crimson_button|64|Crimson Button
+crimson_door|64|Crimson Door
+crimson_double_slab|64|Crimson Slab
+crimson_fence_gate|64|Crimson Fence Gate
+crimson_fence|64|Crimson Fence
+crimson_fungus|64|Crimson Fungus
+crimson_hanging_sign|16|Crimson Hanging Sign
+crimson_hyphae|64|Crimson Hyphae
+crimson_nylium|64|Crimson Nylium
+crimson_planks|64|Crimson Planks
+crimson_pressure_plate|64|Crimson Pressure Plate
+crimson_roots|64|Crimson Roots
+crimson_shelf|64|Crimson Shelf
+crimson_sign|16|Crimson Sign
+crimson_slab|64|Crimson Slab
+crimson_stairs|64|Crimson Stairs
+crimson_standing_sign|64|Crimson Sign
+crimson_stem|64|Crimson Stem
+crimson_trapdoor|64|Crimson Trapdoor
+crimson_wall_sign|64|Crimson Sign
+crossbow|1|Crossbow
+crying_obsidian|64|Crying Obsidian
+cut_copper_slab|64|Cut Copper Slab
+cut_copper_stairs|64|Cut Copper Stairs
+cut_copper|64|Cut Copper
+cut_red_sandstone_double_slab|64|Cut Red Sandstone Double Slab
+cut_red_sandstone_slab|64|Cut Red Sandstone Slab
+cut_red_sandstone|64|Cut Red Sandstone
+cut_sandstone_double_slab|64|Cut Sandstone Double Slab
+cut_sandstone_slab|64|Cut Sandstone Slab
+cut_sandstone|64|Cut Sandstone
+cyan_bundle|1|Cyan Bundle
+cyan_candle_cake|64|Cake with Cyan Candle
+cyan_candle|64|Cyan Candle
+cyan_carpet|64|Cyan Carpet
+cyan_concrete_double_slab|64|Cyan Concrete Double Slab
+cyan_concrete_powder|64|Cyan Concrete Powder
+cyan_concrete_slab|64|Cyan Concrete Slab
+cyan_concrete_stairs|64|Cyan Concrete Stairs
+cyan_concrete|64|Cyan Concrete
+cyan_cushion|16|Cyan Cushion
+cyan_dye|64|Cyan Dye
+cyan_glazed_terracotta|64|Cyan Glazed Terracotta
+cyan_harness|1|Cyan Harness
+cyan_shulker_box|1|Cyan Shulker Box
+cyan_stained_glass_pane|64|Cyan Stained Glass Pane
+cyan_stained_glass|64|Cyan Stained Glass
+cyan_terracotta|64|Cyan Terracotta
+cyan_wool_double_slab|64|Cyan Wool Double Slab
+cyan_wool_slab|64|Cyan Wool Slab
+cyan_wool_stairs|64|Cyan Wool Stairs
+cyan_wool|64|Cyan Wool
+damaged_anvil|64|Damaged Anvil
+dandelion|64|Dandelion
+danger_pottery_sherd|64|Danger Pottery Sherd
+dark_oak_boat|1|Dark Oak Boat
+dark_oak_button|64|Dark Oak Button
+dark_oak_chest_boat|1|Dark Oak Boat with Chest
+dark_oak_door|64|Dark Oak Door
+dark_oak_double_slab|64|Dark Oak Double Slab
+dark_oak_fence_gate|64|Dark Oak Fence Gate
+dark_oak_fence|64|Dark Oak Fence
+dark_oak_hanging_sign|16|Dark Oak Hanging Sign
+dark_oak_leaves|64|Dark Oak Leaves
+dark_oak_log|64|Dark Oak Log
+dark_oak_planks|64|Dark Oak Planks
+dark_oak_pressure_plate|64|Dark Oak Pressure Plate
+dark_oak_sapling|64|Dark Oak Sapling
+dark_oak_shelf|64|Dark Oak Shelf
+dark_oak_sign|16|Dark Oak Sign
+dark_oak_slab|64|Dark Oak Slab
+dark_oak_stairs|64|Dark Oak Stairs
+dark_oak_trapdoor|64|Dark Oak Trapdoor
+dark_oak_wood|64|Dark Oak Wood
+dark_prismarine_double_slab|64|Dark Prismarine Double Slab
+dark_prismarine_slab|64|Dark Prismarine Slab
+dark_prismarine_stairs|64|Dark Prismarine Stairs
+dark_prismarine|64|Dark Prismarine
+darkoak_standing_sign|64|Dark Oak Sign
+darkoak_wall_sign|64|Dark Oak Wall Sign
+daylight_detector_inverted|64|Daylight Detector Inverted
+daylight_detector|64|Daylight Detector
+dead_brain_coral_block|64|Dead Brain Coral Block
+dead_brain_coral_fan|64|Dead Brain Coral Fan
+dead_brain_coral_wall_fan|64|Dead Brain Coral Wall Fan
+dead_brain_coral|64|Dead Brain Coral
+dead_bubble_coral_block|64|Dead Bubble Coral Block
+dead_bubble_coral_fan|64|Dead Bubble Coral Fan
+dead_bubble_coral_wall_fan|64|Dead Bubble Coral Wall Fan
+dead_bubble_coral|64|Dead Bubble Coral
+dead_fire_coral_block|64|Dead Fire Coral Block
+dead_fire_coral_fan|64|Dead Fire Coral Fan
+dead_fire_coral_wall_fan|64|Dead Fire Coral Wall Fan
+dead_fire_coral|64|Dead Fire Coral
+dead_horn_coral_block|64|Dead Horn Coral Block
+dead_horn_coral_fan|64|Dead Horn Coral Fan
+dead_horn_coral_wall_fan|64|Dead Horn Coral Wall Fan
+dead_horn_coral|64|Dead Horn Coral
+dead_tube_coral_block|64|Dead Tube Coral Block
+dead_tube_coral_fan|64|Dead Tube Coral Fan
+dead_tube_coral_wall_fan|64|Dead Tube Coral Wall Fan
+dead_tube_coral|64|Dead Tube Coral
+deadbush|64|Dead Bush
+decorated_pot|64|Decorated Pot
+deepslate_brick_double_slab|64|Deepslate Brick Double Slab
+deepslate_brick_slab|64|Deepslate Brick Slab
+deepslate_brick_stairs|64|Deepslate Brick Stairs
+deepslate_brick_wall|64|Deepslate Brick Wall
+deepslate_bricks|64|Deepslate Bricks
+deepslate_coal_ore|64|Deepslate Coal Ore
+deepslate_copper_ore|64|Deepslate Copper Ore
+deepslate_diamond_ore|64|Deepslate Diamond Ore
+deepslate_emerald_ore|64|Deepslate Emerald Ore
+deepslate_gold_ore|64|Deepslate Gold Ore
+deepslate_iron_ore|64|Deepslate Iron Ore
+deepslate_lapis_ore|64|Deepslate Lapis Lazuli Ore
+deepslate_redstone_ore|64|Deepslate Redstone Ore
+deepslate_tile_double_slab|64|Deepslate Tile Double Slab
+deepslate_tile_slab|64|Deepslate Tile Slab
+deepslate_tile_stairs|64|Deepslate Tile Stairs
+deepslate_tile_wall|64|Deepslate Tile Wall
+deepslate_tiles|64|Deepslate Tiles
+deepslate|64|Deepslate
+deny|64|Deny
+deprecated_anvil|64|Anvil
+deprecated_purpur_block_1|64|Chiseled Purpur
+deprecated_purpur_block_2|64|Deprecated Purpur Block 2
+detector_rail|64|Detector Rail
+diamond_axe|1|Diamond Axe
+diamond_block|64|Block of Diamond
+diamond_boots|1|Diamond Boots
+diamond_chestplate|1|Diamond Chestplate
+diamond_helmet|1|Diamond Helmet
+diamond_hoe|1|Diamond Hoe
+diamond_horse_armor|1|Diamond Horse Armor
+diamond_leggings|1|Diamond Leggings
+diamond_nautilus_armor|1|Diamond Nautilus Armor
+diamond_ore|64|Diamond Ore
+diamond_pickaxe|1|Diamond Pickaxe
+diamond_shovel|1|Diamond Shovel
+diamond_spear|1|Diamond Spear
+diamond_sword|1|Diamond Sword
+diamond|64|Diamond
+diorite_double_slab|64|Diorite Double Slab
+diorite_slab|64|Diorite Slab
+diorite_stairs|64|Diorite Stairs
+diorite_wall|64|Diorite Wall
+diorite|64|Diorite
+dirt_with_roots|64|Rooted Dirt
+dirt|64|Dirt
+disc_fragment_5|64|Disc Fragment
+disc_press|64|Disc Press
+dispenser|64|Dispenser
+dolphin_spawn_egg|64|Dolphin Spawn Egg
+donkey_spawn_egg|64|Donkey Spawn Egg
+double_cut_copper_slab|64|Cut Copper Double Slab
+double_plant|64|Double Plant
+double_stone_block_slab2|64|Double Stone Block Slab2
+double_stone_block_slab3|64|Double Stone Block Slab3
+double_stone_block_slab4|64|Double Stone Block Slab4
+double_stone_block_slab|64|Double Stone Block Slab
+dragon_breath|64|Dragon's Breath
+dragon_egg|64|Dragon Egg
+dragon_head|64|Dragon Head
+dried_ghast|64|Dried Ghast
+dried_kelp_block|64|Dried Kelp Block
+dried_kelp|64|Dried Kelp
+dripstone_block|64|Dripstone Block
+dropper|64|Dropper
+drowned_spawn_egg|64|Drowned Spawn Egg
+dune_armor_trim_smithing_template|64|Dune Armor Trim
+dye|64|Dye
+echo_shard|64|Echo Shard
+egg|16|Egg
+elder_guardian_spawn_egg|64|Elder Guardian Spawn Egg
+elytra|1|Elytra
+emerald_block|64|Block of Emerald
+emerald_ore|64|Emerald Ore
+emerald|64|Emerald
+empty_map|64|Empty Map
+enchanted_book|1|Enchanted Book
+enchanted_golden_apple|64|Enchanted Golden Apple
+enchanting_table|64|Enchanting Table
+end_brick_stairs|64|End Stone Brick Stairs
+end_bricks|64|End Stone Bricks
+end_crystal|64|End Crystal
+end_gateway|64|End Gateway
+end_portal_frame|64|End Portal Frame
+end_portal|64|End Portal
+end_rod|64|End Rod
+end_stone_brick_double_slab|64|End Stone Brick Double Slab
+end_stone_brick_slab|64|End Stone Brick Slab
+end_stone_brick_wall|64|End Stone Brick Wall
+end_stone|64|End Stone
+ender_chest|64|Ender Chest
+ender_dragon_spawn_egg|64|Ender Dragon Spawn Egg
+ender_eye|64|Eye of Ender
+ender_pearl|16|Ender Pearl
+enderman_spawn_egg|64|Enderman Spawn Egg
+endermite_spawn_egg|64|Endermite Spawn Egg
+evoker_spawn_egg|64|Evoker Spawn Egg
+experience_bottle|64|Bottle o' Enchanting
+explorer_pottery_sherd|64|Explorer Pottery Sherd
+exposed_chiseled_copper|64|Exposed Chiseled Copper
+exposed_copper_bars|64|Exposed Copper Bars
+exposed_copper_bulb|64|Exposed Copper Bulb
+exposed_copper_chain|64|Exposed Copper Chain
+exposed_copper_chest|64|Exposed Copper Chest
+exposed_copper_door|64|Exposed Copper Door
+exposed_copper_golem_statue|64|Exposed Copper Golem Statue
+exposed_copper_grate|64|Exposed Copper Grate
+exposed_copper_lantern|64|Exposed Copper Lantern
+exposed_copper_trapdoor|64|Exposed Copper Trapdoor
+exposed_copper|64|Exposed Copper
+exposed_cut_copper_slab|64|Exposed Cut Copper Slab
+exposed_cut_copper_stairs|64|Exposed Cut Copper Stairs
+exposed_cut_copper|64|Exposed Cut Copper
+exposed_double_cut_copper_slab|64|Exposed Cut Copper Double Slab
+exposed_lightning_rod|64|Exposed Lightning Rod
+eye_armor_trim_smithing_template|64|Eye Armor Trim
+farmland|64|Farmland
+feather|64|Feather
+fence_gate|64|Oak Fence Gate
+fence|64|Fence
+fermented_spider_eye|64|Fermented Spider Eye
+fern|64|Fern
+field_masoned_banner_pattern|1|Field Masoned Banner Pattern
+filled_map|64|Map
+fire_charge|64|Fire Charge
+fire_coral_block|64|Fire Coral Block
+fire_coral_fan|64|Fire Coral Fan
+fire_coral_wall_fan|64|Fire Coral Wall Fan
+fire_coral|64|Fire Coral
+firefly_bush|64|Firefly Bush
+firework_rocket|64|Firework Rocket
+firework_star|64|Firework Star
+fire|64|Fire
+fishing_rod|1|Fishing Rod
+fletching_table|64|Fletching Table
+flint_and_steel|1|Flint and Steel
+flint|64|Flint
+flow_armor_trim_smithing_template|64|Flow Armor Trim
+flow_banner_pattern|1|Flow Banner Pattern
+flow_pottery_sherd|64|Flow Pottery Sherd
+flower_banner_pattern|1|Flower Charge Banner Pattern
+flower_pot|64|Flower Pot
+flowering_azalea|64|Flowering Azalea
+flowing_lava|64|Lava
+flowing_water|64|Water
+fox_spawn_egg|64|Fox Spawn Egg
+frame|64|Item Frame
+friend_pottery_sherd|64|Friend Pottery Sherd
+frog_spawn_egg|64|Frog Spawn Egg
+frog_spawn|64|Frogspawn
+frostbite_spawn_egg|64|Frostbite Spawn Egg
+frosted_ice|64|Frosted Ice
+furnace|64|Furnace
+ghast_spawn_egg|64|Ghast Spawn Egg
+ghast_tear|64|Ghast Tear
+gilded_blackstone|64|Gilded Blackstone
+glass_bottle|64|Glass Bottle
+glass_pane|64|Glass Pane
+glass|64|Glass
+glistering_melon_slice|64|Glistering Melon Slice
+globe_banner_pattern|1|Globe Banner Pattern
+glow_berries|64|Glow Berries
+glow_frame|64|Glow Item Frame
+glow_ink_sac|64|Glow Ink Sac
+glow_lichen|64|Glow Lichen
+glow_squid_spawn_egg|64|Glow Squid Spawn Egg
+glow_stick|1|Glow Stick
+glowingobsidian|64|Glowing Obsidian
+glowstone_dust|64|Glowstone Dust
+glowstone|64|Glowstone
+goat_horn|1|Goat Horn
+goat_spawn_egg|64|Goat Spawn Egg
+gold_block|64|Block of Gold
+gold_ingot|64|Gold Ingot
+gold_nugget|64|Gold Nugget
+gold_ore|64|Gold Ore
+golden_apple|64|Golden Apple
+golden_axe|1|Golden Axe
+golden_boots|1|Golden Boots
+golden_carrot|64|Golden Carrot
+golden_chestplate|1|Golden Chestplate
+golden_dandelion|64|Golden Dandelion
+golden_helmet|1|Golden Helmet
+golden_hoe|1|Golden Hoe
+golden_horse_armor|1|Golden Horse Armor
+golden_leggings|1|Golden Leggings
+golden_nautilus_armor|1|Golden Nautilus Armor
+golden_pickaxe|1|Golden Pickaxe
+golden_rail|64|Powered Rail
+golden_shovel|1|Golden Shovel
+golden_spear|1|Golden Spear
+golden_sword|1|Golden Sword
+granite_double_slab|64|Granite Double Slab
+granite_slab|64|Granite Slab
+granite_stairs|64|Granite Stairs
+granite_wall|64|Granite Wall
+granite|64|Granite
+grass_block|64|Grass Block
+grass_path|64|Dirt Path
+gravel|64|Gravel
+gray_bundle|1|Gray Bundle
+gray_candle_cake|64|Cake with Gray Candle
+gray_candle|64|Gray Candle
+gray_carpet|64|Gray Carpet
+gray_concrete_double_slab|64|Gray Concrete Double Slab
+gray_concrete_powder|64|Gray Concrete Powder
+gray_concrete_slab|64|Gray Concrete Slab
+gray_concrete_stairs|64|Gray Concrete Stairs
+gray_concrete|64|Gray Concrete
+gray_cushion|16|Gray Cushion
+gray_dye|64|Gray Dye
+gray_glazed_terracotta|64|Gray Glazed Terracotta
+gray_harness|1|Gray Harness
+gray_shulker_box|1|Gray Shulker Box
+gray_stained_glass_pane|64|Gray Stained Glass Pane
+gray_stained_glass|64|Gray Stained Glass
+gray_terracotta|64|Gray Terracotta
+gray_wool_double_slab|64|Gray Wool Double Slab
+gray_wool_slab|64|Gray Wool Slab
+gray_wool_stairs|64|Gray Wool Stairs
+gray_wool|64|Gray Wool
+green_bundle|1|Green Bundle
+green_candle_cake|64|Cake with Green Candle
+green_candle|64|Green Candle
+green_carpet|64|Green Carpet
+green_concrete_double_slab|64|Green Concrete Double Slab
+green_concrete_powder|64|Green Concrete Powder
+green_concrete_slab|64|Green Concrete Slab
+green_concrete_stairs|64|Green Concrete Stairs
+green_concrete|64|Green Concrete
+green_cushion|16|Green Cushion
+green_dye|64|Green Dye
+green_glazed_terracotta|64|Green Glazed Terracotta
+green_harness|1|Green Harness
+green_shulker_box|1|Green Shulker Box
+green_stained_glass_pane|64|Green Stained Glass Pane
+green_stained_glass|64|Green Stained Glass
+green_terracotta|64|Green Terracotta
+green_wool_double_slab|64|Green Wool Double Slab
+green_wool_slab|64|Green Wool Slab
+green_wool_stairs|64|Green Wool Stairs
+green_wool|64|Green Wool
+grindstone|64|Grindstone
+guardian_spawn_egg|64|Guardian Spawn Egg
+gunpowder|64|Gunpowder
+guster_banner_pattern|1|Guster Banner Pattern
+guster_pottery_sherd|64|Guster Pottery Sherd
+hanging_roots|64|Hanging Roots
+happy_ghast_spawn_egg|64|Happy Ghast Spawn Egg
+hard_black_stained_glass_pane|64|Hardened Black Stained Glass Pane
+hard_black_stained_glass|64|Hardened Black Stained Glass
+hard_blue_stained_glass_pane|64|Hardened Blue Stained Glass Pane
+hard_blue_stained_glass|64|Hardened Blue Stained Glass
+hard_brown_stained_glass_pane|64|Hardened Brown Stained Glass Pane
+hard_brown_stained_glass|64|Hardened Brown Stained Glass
+hard_cyan_stained_glass_pane|64|Hardened Cyan Stained Glass Pane
+hard_cyan_stained_glass|64|Hardened Cyan Stained Glass
+hard_glass_pane|64|Hardened Glass Pane
+hard_glass|64|Hardened Glass
+hard_gray_stained_glass_pane|64|Hardened Gray Stained Glass Pane
+hard_gray_stained_glass|64|Hardened Gray Stained Glass
+hard_green_stained_glass_pane|64|Hardened Green Stained Glass Pane
+hard_green_stained_glass|64|Hardened Green Stained Glass
+hard_light_blue_stained_glass_pane|64|Hardened Light Blue Stained Glass Pane
+hard_light_blue_stained_glass|64|Hardened Light Blue Stained Glass
+hard_light_gray_stained_glass_pane|64|Hardened Light Gray Stained Glass Pane
+hard_light_gray_stained_glass|64|Hardened Light Gray Stained Glass
+hard_lime_stained_glass_pane|64|Hardened Lime Stained Glass Pane
+hard_lime_stained_glass|64|Hardened Lime Stained Glass
+hard_magenta_stained_glass_pane|64|Hardened Magenta Stained Glass Pane
+hard_magenta_stained_glass|64|Hardened Magenta Stained Glass
+hard_orange_stained_glass_pane|64|Hardened Orange Stained Glass Pane
+hard_orange_stained_glass|64|Hardened Orange Stained Glass
+hard_pink_stained_glass_pane|64|Hardened Pink Stained Glass Pane
+hard_pink_stained_glass|64|Hardened Pink Stained Glass
+hard_purple_stained_glass_pane|64|Hardened Purple Stained Glass Pane
+hard_purple_stained_glass|64|Hardened Purple Stained Glass
+hard_red_stained_glass_pane|64|Hardened Red Stained Glass Pane
+hard_red_stained_glass|64|Hardened Red Stained Glass
+hard_stained_glass_pane|64|Hard Stained Glass Pane
+hard_stained_glass|64|Hard Stained Glass
+hard_white_stained_glass_pane|64|Hardened White Stained Glass Pane
+hard_white_stained_glass|64|Hardened White Stained Glass
+hard_yellow_stained_glass_pane|64|Hardened Yellow Stained Glass Pane
+hard_yellow_stained_glass|64|Hardened Yellow Stained Glass
+hardened_clay|64|Terracotta
+hay_block|64|Hay Bale
+heart_of_the_sea|64|Heart of the Sea
+heart_pottery_sherd|64|Heart Pottery Sherd
+heartbreak_pottery_sherd|64|Heartbreak Pottery Sherd
+heavy_core|64|Heavy Core
+heavy_weighted_pressure_plate|64|Heavy Weighted Pressure Plate
+hoglin_spawn_egg|64|Hoglin Spawn Egg
+honey_block|64|Honey Block
+honey_bottle|16|Honey Bottle
+honeycomb_block|64|Honeycomb Block
+honeycomb|64|Honeycomb
+hopper_minecart|1|Minecart with Hopper
+hopper|64|Hopper
+horn_coral_block|64|Horn Coral Block
+horn_coral_fan|64|Horn Coral Fan
+horn_coral_wall_fan|64|Horn Coral Wall Fan
+horn_coral|64|Horn Coral
+horse_spawn_egg|64|Horse Spawn Egg
+host_armor_trim_smithing_template|64|Host Armor Trim
+howl_pottery_sherd|64|Howl Pottery Sherd
+husk_spawn_egg|64|Husk Spawn Egg
+ice_bomb|16|Ice Bomb
+ice_crystal|64|Ice Crystal
+ice|64|Ice
+icicle|64|Icicle
+infested_chiseled_stone_bricks|64|Infested Chiseled Stone Brick
+infested_cobblestone|64|Infested Cobblestone
+infested_cracked_stone_bricks|64|Infested Cracked Stone Brick
+infested_deepslate|64|Infested Deepslate
+infested_mossy_stone_bricks|64|Infested Mossy Stone Brick
+infested_stone_bricks|64|Infested Stone Bricks
+infested_stone|64|Infested Stone
+ink_sac|64|Ink Sac
+invisible_bedrock|64|Invisible Bedrock
+iron_axe|1|Iron Axe
+iron_bars|64|Iron Bars
+iron_block|64|Block of Iron
+iron_boots|1|Iron Boots
+iron_chain|64|Iron Chain
+iron_chestplate|1|Iron Chestplate
+iron_door|64|Iron Door
+iron_golem_spawn_egg|64|Iron Golem Spawn Egg
+iron_helmet|1|Iron Helmet
+iron_hoe|1|Iron Hoe
+iron_horse_armor|1|Iron Horse Armor
+iron_ingot|64|Iron Ingot
+iron_leggings|1|Iron Leggings
+iron_nautilus_armor|1|Iron Nautilus Armor
+iron_nugget|64|Iron Nugget
+iron_ore|64|Iron Ore
+iron_pickaxe|1|Iron Pickaxe
+iron_shovel|1|Iron Shovel
+iron_spear|1|Iron Spear
+iron_sword|1|Iron Sword
+iron_trapdoor|64|Iron Trapdoor
+item.bed|64|Bed
+item.beetroot|64|Beetroot
+item.brewing_stand|64|Brewing Stand
+item.cake|64|Cake
+item.camera|64|Camera
+item.campfire|64|Campfire
+item.cauldron|64|Cauldron
+item.flower_pot|64|Flower Pot
+item.frame|64|Item Frame
+item.glow_frame|64|Glow Frame
+item.hopper|64|Hopper
+item.kelp|64|Kelp
+item.nether_sprouts|64|Nether Sprouts
+item.nether_wart|64|Nether Wart
+item.reeds|64|Sugar cane
+item.soul_campfire|64|Soul Campfire
+item.straw_bed|64|Straw Bed
+item.wheat|64|Crops
+jigsaw|64|Jigsaw Block
+jukebox|64|Jukebox
+jungle_boat|1|Jungle Boat
+jungle_button|64|Jungle Button
+jungle_chest_boat|1|Jungle Boat with Chest
+jungle_door|64|Jungle Door
+jungle_double_slab|64|Jungle Double Slab
+jungle_fence_gate|64|Jungle Fence Gate
+jungle_fence|64|Jungle Fence
+jungle_hanging_sign|16|Jungle Hanging Sign
+jungle_leaves|64|Jungle Leaves
+jungle_log|64|Jungle Log
+jungle_planks|64|Jungle Planks
+jungle_pressure_plate|64|Jungle Pressure Plate
+jungle_sapling|64|Jungle Sapling
+jungle_shelf|64|Jungle Shelf
+jungle_sign|16|Jungle Sign
+jungle_slab|64|Jungle Slab
+jungle_stairs|64|Jungle Stairs
+jungle_standing_sign|64|Jungle Sign
+jungle_trapdoor|64|Jungle Trapdoor
+jungle_wall_sign|64|Jungle Wall Sign
+jungle_wood|64|Jungle Wood
+kelp|64|Kelp
+lab_table|64|Lab Table
+ladder|64|Ladder
+lantern|64|Lantern
+lapis_block|64|Block of Lapis Lazuli
+lapis_lazuli|64|Lapis Lazuli
+lapis_ore|64|Lapis Lazuli Ore
+large_amethyst_bud|64|Large Amethyst Bud
+large_fern|64|Large Fern
+lava_bucket|1|Lava Bucket
+lava|64|Lava
+lead|64|Lead
+leaf_litter|64|Leaf Litter
+leather_boots|1|Leather Boots
+leather_chestplate|1|Leather Tunic
+leather_helmet|1|Leather Cap
+leather_horse_armor|1|Leather Horse Armor
+leather_leggings|1|Leather Pants
+leather|64|Leather
+leaves2|64|Leaves2
+leaves|64|Leaves
+lectern|64|Lectern
+lever|64|Lever
+light_block_0|64|Light
+light_block_10|64|Light
+light_block_11|64|Light
+light_block_12|64|Light
+light_block_13|64|Light
+light_block_14|64|Light
+light_block_15|64|Light
+light_block_1|64|Light
+light_block_2|64|Light
+light_block_3|64|Light
+light_block_4|64|Light
+light_block_5|64|Light
+light_block_6|64|Light
+light_block_7|64|Light
+light_block_8|64|Light
+light_block_9|64|Light
+light_block|64|Light
+light_blue_bundle|1|Light Blue Bundle
+light_blue_candle_cake|64|Cake with Light Blue Candle
+light_blue_candle|64|Light Blue Candle
+light_blue_carpet|64|Light Blue Carpet
+light_blue_concrete_double_slab|64|Light Blue Concrete Double Slab
+light_blue_concrete_powder|64|Light Blue Concrete Powder
+light_blue_concrete_slab|64|Light Blue Concrete Slab
+light_blue_concrete_stairs|64|Light Blue Concrete Stairs
+light_blue_concrete|64|Light Blue Concrete
+light_blue_cushion|16|Light Blue Cushion
+light_blue_dye|64|Light Blue Dye
+light_blue_glazed_terracotta|64|Light Blue Glazed Terracotta
+light_blue_harness|1|Light Blue Harness
+light_blue_shulker_box|1|Light Blue Shulker Box
+light_blue_stained_glass_pane|64|Light Blue Stained Glass Pane
+light_blue_stained_glass|64|Light Blue Stained Glass
+light_blue_terracotta|64|Light Blue Terracotta
+light_blue_wool_double_slab|64|Light Blue Wool Double Slab
+light_blue_wool_slab|64|Light Blue Wool Slab
+light_blue_wool_stairs|64|Light Blue Wool Stairs
+light_blue_wool|64|Light Blue Wool
+light_gray_bundle|1|Light Gray Bundle
+light_gray_candle_cake|64|Cake with Light Gray Candle
+light_gray_candle|64|Light Gray Candle
+light_gray_carpet|64|Light Gray Carpet
+light_gray_concrete_double_slab|64|Light Gray Concrete Double Slab
+light_gray_concrete_powder|64|Light Gray Concrete Powder
+light_gray_concrete_slab|64|Light Gray Concrete Slab
+light_gray_concrete_stairs|64|Light Gray Concrete Stairs
+light_gray_concrete|64|Light Gray Concrete
+light_gray_cushion|16|Light Gray Cushion
+light_gray_dye|64|Light Gray Dye
+light_gray_harness|1|Light Gray Harness
+light_gray_shulker_box|1|Light Gray Shulker Box
+light_gray_stained_glass_pane|64|Light Gray Stained Glass Pane
+light_gray_stained_glass|64|Light Gray Stained Glass
+light_gray_terracotta|64|Light Gray Terracotta
+light_gray_wool_double_slab|64|Light Gray Wool Double Slab
+light_gray_wool_slab|64|Light Gray Wool Slab
+light_gray_wool_stairs|64|Light Gray Wool Stairs
+light_gray_wool|64|Light Gray Wool
+light_weighted_pressure_plate|64|Light Weighted Pressure Plate
+lightning_rod|64|Lightning Rod
+lilac|64|Lilac
+lily_of_the_valley|64|Lily of the Valley
+lime_bundle|1|Lime Bundle
+lime_candle_cake|64|Cake with Lime Candle
+lime_candle|64|Lime Candle
+lime_carpet|64|Lime Carpet
+lime_concrete_double_slab|64|Lime Concrete Double Slab
+lime_concrete_powder|64|Lime Concrete Powder
+lime_concrete_slab|64|Lime Concrete Slab
+lime_concrete_stairs|64|Lime Concrete Stairs
+lime_concrete|64|Lime Concrete
+lime_cushion|16|Lime Cushion
+lime_dye|64|Lime Dye
+lime_glazed_terracotta|64|Lime Glazed Terracotta
+lime_harness|1|Lime Harness
+lime_shulker_box|1|Lime Shulker Box
+lime_stained_glass_pane|64|Lime Stained Glass Pane
+lime_stained_glass|64|Lime Stained Glass
+lime_terracotta|64|Lime Terracotta
+lime_wool_double_slab|64|Lime Wool Double Slab
+lime_wool_slab|64|Lime Wool Slab
+lime_wool_stairs|64|Lime Wool Stairs
+lime_wool|64|Lime Wool
+lingering_potion|1|Lingering Water Bottle
+lit_blast_furnace|64|Lit Blast Furnace
+lit_deepslate_redstone_ore|64|Lit Deepslate Redstone Ore
+lit_furnace|64|Lit Furnace
+lit_pumpkin|64|Jack o'Lantern
+lit_redstone_lamp|64|Lit Redstone Lamp
+lit_redstone_ore|64|Lit Redstone Ore
+lit_smoker|64|Lit Smoker
+llama_spawn_egg|64|Llama Spawn Egg
+lodestone_compass|64|Lodestone Compass
+lodestone|64|Lodestone
+log2|64|Log2
+log|64|Log
+loom|64|Loom
+mace|1|Mace
+magenta_bundle|1|Magenta Bundle
+magenta_candle_cake|64|Cake with Magenta Candle
+magenta_candle|64|Magenta Candle
+magenta_carpet|64|Magenta Carpet
+magenta_concrete_double_slab|64|Magenta Concrete Double Slab
+magenta_concrete_powder|64|Magenta Concrete Powder
+magenta_concrete_slab|64|Magenta Concrete Slab
+magenta_concrete_stairs|64|Magenta Concrete Stairs
+magenta_concrete|64|Magenta Concrete
+magenta_cushion|16|Magenta Cushion
+magenta_dye|64|Magenta Dye
+magenta_glazed_terracotta|64|Magenta Glazed Terracotta
+magenta_harness|1|Magenta Harness
+magenta_shulker_box|1|Magenta Shulker Box
+magenta_stained_glass_pane|64|Magenta Stained Glass Pane
+magenta_stained_glass|64|Magenta Stained Glass
+magenta_terracotta|64|Magenta Terracotta
+magenta_wool_double_slab|64|Magenta Wool Double Slab
+magenta_wool_slab|64|Magenta Wool Slab
+magenta_wool_stairs|64|Magenta Wool Stairs
+magenta_wool|64|Magenta Wool
+magma_cream|64|Magma Cream
+magma_cube_spawn_egg|64|Magma Cube Spawn Egg
+magma|64|Magma Block
+mangrove_boat|1|Mangrove Boat
+mangrove_button|64|Mangrove Button
+mangrove_chest_boat|1|Mangrove Boat with Chest
+mangrove_door|64|Mangrove Door
+mangrove_double_slab|64|Mangrove Double Slab
+mangrove_fence_gate|64|Mangrove Fence Gate
+mangrove_fence|64|Mangrove Fence
+mangrove_hanging_sign|16|Mangrove Hanging Sign
+mangrove_leaves|64|Mangrove Leaves
+mangrove_log|64|Mangrove Log
+mangrove_planks|64|Mangrove Planks
+mangrove_pressure_plate|64|Mangrove Pressure Plate
+mangrove_propagule|64|Mangrove Propagule
+mangrove_roots|64|Mangrove Roots
+mangrove_shelf|64|Mangrove Shelf
+mangrove_sign|16|Mangrove Sign
+mangrove_slab|64|Mangrove Slab
+mangrove_stairs|64|Mangrove Stairs
+mangrove_standing_sign|64|Mangrove Sign
+mangrove_trapdoor|64|Mangrove Trapdoor
+mangrove_wall_sign|64|Mangrove Wall Sign
+mangrove_wood|64|Mangrove Wood
+material_reducer|64|Material Reducer
+medicine|1|Eye Drops
+medium_amethyst_bud|64|Medium Amethyst Bud
+melon_block|64|Melon
+melon_seeds|64|Melon Seeds
+melon_slice|64|Melon Slice
+melon_stem|64|Melon Stem
+milk_bucket|1|Milk Bucket
+minecart|1|Minecart
+miner_pottery_sherd|64|Miner Pottery Sherd
+mob_spawner|64|Monster Spawner
+mojang_banner_pattern|1|Thing Banner Pattern
+monster_egg|64|Monster Egg
+mooshroom_spawn_egg|64|Mooshroom Spawn Egg
+moss_block|64|Moss Block
+moss_carpet|64|Moss Carpet
+mossy_cobblestone_double_slab|64|Mossy Cobblestone Double Slab
+mossy_cobblestone_slab|64|Mossy Cobblestone Slab
+mossy_cobblestone_stairs|64|Mossy Cobblestone Stairs
+mossy_cobblestone_wall|64|Mossy Cobblestone Wall
+mossy_cobblestone|64|Mossy Cobblestone
+mossy_stone_brick_double_slab|64|Mossy Stone Brick Double Slab
+mossy_stone_brick_slab|64|Mossy Stone Brick Slab
+mossy_stone_brick_stairs|64|Mossy Stone Brick Stairs
+mossy_stone_brick_wall|64|Mossy Stone Brick Wall
+mossy_stone_bricks|64|Mossy Stone Bricks
+mourner_pottery_sherd|64|Mourner Pottery Sherd
+mud_brick_double_slab|64|Mud Brick Double Slab
+mud_brick_slab|64|Mud Brick Slab
+mud_brick_stairs|64|Mud Brick Stairs
+mud_brick_wall|64|Mud Brick Wall
+mud_bricks|64|Mud Bricks
+muddy_mangrove_roots|64|Muddy Mangrove Roots
+mud|64|Mud
+mule_spawn_egg|64|Mule Spawn Egg
+mushroom_stem|64|Mushroom Stem
+mushroom_stew|1|Mushroom Stew
+music_disc_11|1|Music Disc
+music_disc_13|1|Music Disc
+music_disc_5|1|Music Disc
+music_disc_blocks|1|Music Disc
+music_disc_bounce|1|Music Disc
+music_disc_cat|1|Music Disc
+music_disc_chirp|1|Music Disc
+music_disc_creator_music_box|1|Music Disc
+music_disc_creator|1|Music Disc
+music_disc_far|1|Music Disc
+music_disc_lava_chicken|1|Music Disc
+music_disc_mall|1|Music Disc
+music_disc_mellohi|1|Music Disc
+music_disc_otherside|1|Music Disc
+music_disc_pigstep|1|Music Disc
+music_disc_precipice|1|Music Disc
+music_disc_relic|1|Music Disc
+music_disc_stal|1|Music Disc
+music_disc_strad|1|Music Disc
+music_disc_tears|1|Music Disc
+music_disc_wait|1|Music Disc
+music_disc_ward|1|Music Disc
+mutton|64|Raw Mutton
+mycelium|64|Mycelium
+name_tag|64|Name Tag
+nautilus_shell|64|Nautilus Shell
+nautilus_spawn_egg|64|Nautilus Spawn Egg
+nether_brick_double_slab|64|Nether Brick Slab
+nether_brick_fence|64|Nether Brick Fence
+nether_brick_slab|64|Nether Brick Slab
+nether_brick_stairs|64|Nether Brick Stairs
+nether_brick_wall|64|Nether Brick Wall
+nether_brick|64|Nether Bricks
+nether_gold_ore|64|Nether Gold Ore
+nether_sprouts|64|Nether Sprouts
+nether_star|64|Nether Star
+nether_wart_block|64|Nether Wart Block
+nether_wart|64|Nether Wart
+netherbrick|64|Nether Brick
+netherite_axe|1|Netherite Axe
+netherite_block|64|Block of Netherite
+netherite_boots|1|Netherite Boots
+netherite_chestplate|1|Netherite Chestplate
+netherite_helmet|1|Netherite Helmet
+netherite_hoe|1|Netherite Hoe
+netherite_horse_armor|1|Netherite Horse Armor
+netherite_ingot|64|Netherite Ingot
+netherite_leggings|1|Netherite Leggings
+netherite_nautilus_armor|1|Netherite Nautilus Armor
+netherite_pickaxe|1|Netherite Pickaxe
+netherite_scrap|64|Netherite Scrap
+netherite_shovel|1|Netherite Shovel
+netherite_spear|1|Netherite Spear
+netherite_sword|1|Netherite Sword
+netherite_upgrade_smithing_template|64|Netherite Upgrade
+netherrack|64|Netherrack
+netherreactor|64|Nether Reactor Core
+normal_stone_double_slab|64|Stone Double Slab
+normal_stone_slab|64|Stone Slab
+normal_stone_stairs|64|Stone Stairs
+noteblock|64|Note Block
+npc_spawn_egg|64|NPC Spawn Egg
+oak_boat|1|Oak Boat
+oak_chest_boat|1|Oak Boat with Chest
+oak_double_slab|64|Oak Double Slab
+oak_fence|64|Oak Fence
+oak_hanging_sign|16|Oak Hanging Sign
+oak_leaves|64|Oak Leaves
+oak_log|64|Oak Log
+oak_planks|64|Oak Planks
+oak_sapling|64|Oak Sapling
+oak_shelf|64|Oak Shelf
+oak_sign|16|Oak Sign
+oak_slab|64|Oak Slab
+oak_stairs|64|Oak Stairs
+oak_wood|64|Oak Wood
+observer|64|Observer
+obsidian|64|Obsidian
+ocelot_spawn_egg|64|Ocelot Spawn Egg
+ochre_froglight|64|Ochre Froglight
+ominous_bottle|64|Ominous Bottle
+ominous_trial_key|64|Ominous Trial Key
+open_eyeblossom|64|Open Eyeblossom
+orange_bundle|1|Orange Bundle
+orange_candle_cake|64|Cake with Orange Candle
+orange_candle|64|Orange Candle
+orange_carpet|64|Orange Carpet
+orange_concrete_double_slab|64|Orange Concrete Double Slab
+orange_concrete_powder|64|Orange Concrete Powder
+orange_concrete_slab|64|Orange Concrete Slab
+orange_concrete_stairs|64|Orange Concrete Stairs
+orange_concrete|64|Orange Concrete
+orange_cushion|16|Orange Cushion
+orange_dye|64|Orange Dye
+orange_glazed_terracotta|64|Orange Glazed Terracotta
+orange_harness|1|Orange Harness
+orange_poplar_leaves|64|Orange Poplar Leaves
+orange_shulker_box|1|Orange Shulker Box
+orange_stained_glass_pane|64|Orange Stained Glass Pane
+orange_stained_glass|64|Orange Stained Glass
+orange_terracotta|64|Orange Terracotta
+orange_tulip|64|Orange Tulip
+orange_wool_double_slab|64|Orange Wool Double Slab
+orange_wool_slab|64|Orange Wool Slab
+orange_wool_stairs|64|Orange Wool Stairs
+orange_wool|64|Orange Wool
+oxeye_daisy|64|Oxeye Daisy
+oxidized_chiseled_copper|64|Oxidized Chiseled Copper
+oxidized_copper_bars|64|Oxidized Copper Bars
+oxidized_copper_bulb|64|Oxidized Copper Bulb
+oxidized_copper_chain|64|Oxidized Copper Chain
+oxidized_copper_chest|64|Oxidized Copper Chest
+oxidized_copper_door|64|Oxidized Copper Door
+oxidized_copper_golem_statue|64|Oxidized Copper Golem Statue
+oxidized_copper_grate|64|Oxidized Copper Grate
+oxidized_copper_lantern|64|Oxidized Copper Lantern
+oxidized_copper_trapdoor|64|Oxidized Copper Trapdoor
+oxidized_copper|64|Oxidized Copper
+oxidized_cut_copper_slab|64|Oxidized Cut Copper Slab
+oxidized_cut_copper_stairs|64|Oxidized Cut Copper Stairs
+oxidized_cut_copper|64|Oxidized Cut Copper
+oxidized_double_cut_copper_slab|64|Oxidized Cut Copper Double Slab
+oxidized_lightning_rod|64|Oxidized Lightning Rod
+packed_ice|64|Packed Ice
+packed_mud|64|Packed Mud
+painting|64|Painting
+pale_hanging_moss|64|Pale Hanging Moss
+pale_moss_block|64|Pale Moss Block
+pale_moss_carpet|64|Pale Moss Carpet
+pale_oak_boat|1|Pale Oak Boat
+pale_oak_button|64|Pale Oak Button
+pale_oak_chest_boat|1|Pale Oak Boat with Chest
+pale_oak_door|64|Pale Oak Door
+pale_oak_double_slab|64|Pale Oak Double Slab
+pale_oak_fence_gate|64|Pale Oak Fence Gate
+pale_oak_fence|64|Pale Oak Fence
+pale_oak_hanging_sign|16|Pale Oak Hanging Sign
+pale_oak_leaves|64|Pale Oak Leaves
+pale_oak_log|64|Pale Oak Log
+pale_oak_planks|64|Pale Oak Planks
+pale_oak_pressure_plate|64|Pale Oak Pressure Plate
+pale_oak_sapling|64|Pale Oak Sapling
+pale_oak_shelf|64|Pale Oak Shelf
+pale_oak_sign|16|Pale Oak Sign
+pale_oak_slab|64|Pale Oak Slab
+pale_oak_stairs|64|Pale Oak Stairs
+pale_oak_standing_sign|64|Pale Oak Sign
+pale_oak_trapdoor|64|Pale Oak Trapdoor
+pale_oak_wall_sign|64|Pale Oak Wall Sign
+pale_oak_wood|64|Pale Oak Wood
+panda_spawn_egg|64|Panda Spawn Egg
+paper|64|Paper
+parched_spawn_egg|64|Parched Spawn Egg
+parrot_spawn_egg|64|Parrot Spawn Egg
+pearlescent_froglight|64|Pearlescent Froglight
+peony|64|Peony
+petrified_oak_double_slab|64|Wooden Slab
+petrified_oak_slab|64|Wooden Slab
+phantom_membrane|64|Phantom Membrane
+phantom_spawn_egg|64|Phantom Spawn Egg
+photo_item|1|Photo
+pig_spawn_egg|64|Pig Spawn Egg
+piglin_banner_pattern|1|Snout Banner Pattern
+piglin_brute_spawn_egg|64|Piglin Brute Spawn Egg
+piglin_head|64|Piglin Head
+piglin_spawn_egg|64|Piglin Spawn Egg
+pillager_spawn_egg|64|Pillager Spawn Egg
+pink_bundle|1|Pink Bundle
+pink_candle_cake|64|Cake with Pink Candle
+pink_candle|64|Pink Candle
+pink_carpet|64|Pink Carpet
+pink_concrete_double_slab|64|Pink Concrete Double Slab
+pink_concrete_powder|64|Pink Concrete Powder
+pink_concrete_slab|64|Pink Concrete Slab
+pink_concrete_stairs|64|Pink Concrete Stairs
+pink_concrete|64|Pink Concrete
+pink_cushion|16|Pink Cushion
+pink_dye|64|Pink Dye
+pink_glazed_terracotta|64|Pink Glazed Terracotta
+pink_harness|1|Pink Harness
+pink_petals|64|Pink Petals
+pink_shulker_box|1|Pink Shulker Box
+pink_stained_glass_pane|64|Pink Stained Glass Pane
+pink_stained_glass|64|Pink Stained Glass
+pink_terracotta|64|Pink Terracotta
+pink_tulip|64|Pink Tulip
+pink_wool_double_slab|64|Pink Wool Double Slab
+pink_wool_slab|64|Pink Wool Slab
+pink_wool_stairs|64|Pink Wool Stairs
+pink_wool|64|Pink Wool
+piston_arm_collision|64|Piston Arm Collision
+piston|64|Piston
+pitcher_crop|64|Pitcher Crop
+pitcher_plant|64|Pitcher Plant
+pitcher_pod|64|Pitcher Pod
+planks|64|Planks
+player_head|64|Player Head
+plenty_pottery_sherd|64|Plenty Pottery Sherd
+podzol|64|Podzol
+pointed_dripstone|64|Pointed Dripstone
+poisonous_potato|64|Poisonous Potato
+polar_bear_spawn_egg|64|Polar Bear Spawn Egg
+polished_andesite_double_slab|64|Polished Andesite Double Slab
+polished_andesite_slab|64|Polished Andesite Slab
+polished_andesite_stairs|64|Polished Andesite Stairs
+polished_andesite|64|Polished Andesite
+polished_basalt|64|Polished Basalt
+polished_blackstone_brick_double_slab|64|Polished Blackstone Brick Double Slab
+polished_blackstone_brick_slab|64|Polished Blackstone Brick Slab
+polished_blackstone_brick_stairs|64|Polished Blackstone Brick Stairs
+polished_blackstone_brick_wall|64|Polished Blackstone Brick Wall
+polished_blackstone_bricks|64|Polished Blackstone Bricks
+polished_blackstone_button|64|Polished Blackstone Button
+polished_blackstone_double_slab|64|Polished Blackstone Double Slab
+polished_blackstone_pressure_plate|64|Polished Blackstone Pressure Plate
+polished_blackstone_slab|64|Polished Blackstone Slab
+polished_blackstone_stairs|64|Polished Blackstone Stairs
+polished_blackstone_wall|64|Polished Blackstone Wall
+polished_blackstone|64|Polished Blackstone
+polished_cinnabar_double_slab|64|Polished Cinnabar Double Slab
+polished_cinnabar_slab|64|Polished Cinnabar Slab
+polished_cinnabar_stairs|64|Polished Cinnabar Stairs
+polished_cinnabar_wall|64|Polished Cinnabar Wall
+polished_cinnabar|64|Polished Cinnabar
+polished_deepslate_double_slab|64|Polished Deepslate Double Slab
+polished_deepslate_slab|64|Polished Deepslate Slab
+polished_deepslate_stairs|64|Polished Deepslate Stairs
+polished_deepslate_wall|64|Polished Deepslate Wall
+polished_deepslate|64|Polished Deepslate
+polished_diorite_double_slab|64|Polished Diorite Double Slab
+polished_diorite_slab|64|Polished Diorite Slab
+polished_diorite_stairs|64|Polished Diorite Stairs
+polished_diorite|64|Polished Diorite
+polished_granite_double_slab|64|Polished Granite Double Slab
+polished_granite_slab|64|Polished Granite Slab
+polished_granite_stairs|64|Polished Granite Stairs
+polished_granite|64|Polished Granite
+polished_sulfur_double_slab|64|Polished Sulfur Double Slab
+polished_sulfur_slab|64|Polished Sulfur Slab
+polished_sulfur_stairs|64|Polished Sulfur Stairs
+polished_sulfur_wall|64|Polished Sulfur Wall
+polished_sulfur|64|Polished Sulfur
+polished_tuff_double_slab|64|Polished Tuff Double Slab
+polished_tuff_slab|64|Polished Tuff Slab
+polished_tuff_stairs|64|Polished Tuff Stairs
+polished_tuff_wall|64|Polished Tuff Wall
+polished_tuff|64|Polished Tuff
+poplar_boat|1|Poplar Boat
+poplar_button|64|Poplar Button
+poplar_chest_boat|1|Poplar Boat with Chest
+poplar_door|64|Poplar Door
+poplar_double_slab|64|Poplar Double Slab
+poplar_fence_gate|64|Poplar Fence Gate
+poplar_fence|64|Poplar Fence
+poplar_hanging_sign|16|Poplar Hanging Sign
+poplar_log|64|Poplar Log
+poplar_planks|64|Poplar Planks
+poplar_pressure_plate|64|Poplar Pressure Plate
+poplar_sapling|64|Poplar Sapling
+poplar_shelf|64|Poplar Shelf
+poplar_sign|16|Poplar Sign
+poplar_slab|64|Poplar Slab
+poplar_stairs|64|Poplar Stairs
+poplar_standing_sign|64|Poplar Sign
+poplar_trapdoor|64|Poplar Trapdoor
+poplar_wall_sign|64|Poplar Wall Sign
+poplar_wood|64|Poplar Wood
+popped_chorus_fruit|64|Popped Chorus Fruit
+poppy|64|Poppy
+porkchop|64|Raw Porkchop
+portal|64|Portal
+portfolio|1|Portfolio
+potatoes|64|Potatoes
+potato|64|Potato
+potent_sulfur|64|Potent Sulfur
+potion|1|Water Bottle
+powder_snow_bucket|1|Powder Snow Bucket
+powder_snow|64|Powder Snow
+powered_comparator|64|Powered Comparator
+powered_repeater|64|Powered Repeater
+prismarine_brick_double_slab|64|Prismarine Brick Double Slab
+prismarine_brick_slab|64|Prismarine Brick Slab
+prismarine_bricks_stairs|64|Prismarine Brick Stairs
+prismarine_bricks|64|Prismarine Bricks
+prismarine_crystals|64|Prismarine Crystals
+prismarine_double_slab|64|Prismarine DoubleSlab
+prismarine_shard|64|Prismarine Shard
+prismarine_slab|64|Prismarine Slab
+prismarine_stairs|64|Prismarine Stairs
+prismarine_wall|64|Prismarine Wall
+prismarine|64|Prismarine
+prize_pottery_sherd|64|Prize Pottery Sherd
+pufferfish_bucket|1|Bucket of Pufferfish
+pufferfish_spawn_egg|64|Pufferfish Spawn Egg
+pufferfish|64|Pufferfish
+pumpkin_pie|64|Pumpkin Pie
+pumpkin_seeds|64|Pumpkin Seeds
+pumpkin_stem|64|Pumpkin Stem
+pumpkin|64|Pumpkin
+purple_bundle|1|Purple Bundle
+purple_candle_cake|64|Cake with Purple Candle
+purple_candle|64|Purple Candle
+purple_carpet|64|Purple Carpet
+purple_concrete_double_slab|64|Purple Concrete Double Slab
+purple_concrete_powder|64|Purple Concrete Powder
+purple_concrete_slab|64|Purple Concrete Slab
+purple_concrete_stairs|64|Purple Concrete Stairs
+purple_concrete|64|Purple Concrete
+purple_cushion|16|Purple Cushion
+purple_dye|64|Purple Dye
+purple_glazed_terracotta|64|Purple Glazed Terracotta
+purple_harness|1|Purple Harness
+purple_shulker_box|1|Purple Shulker Box
+purple_stained_glass_pane|64|Purple Stained Glass Pane
+purple_stained_glass|64|Purple Stained Glass
+purple_terracotta|64|Purple Terracotta
+purple_wool_double_slab|64|Purple Wool Double Slab
+purple_wool_slab|64|Purple Wool Slab
+purple_wool_stairs|64|Purple Wool Stairs
+purple_wool|64|Purple Wool
+purpur_block|64|Purpur Block
+purpur_double_slab|64|Purpur Double Slab
+purpur_pillar|64|Purpur Pillar
+purpur_slab|64|Purpur Slab
+purpur_stairs|64|Purpur Stairs
+quartz_block|64|Block of Quartz
+quartz_bricks|64|Quartz Bricks
+quartz_double_slab|64|Quartz Slab
+quartz_ore|64|Nether Quartz Ore
+quartz_pillar|64|Quartz Pillar
+quartz_slab|64|Quartz Slab
+quartz_stairs|64|Quartz Stairs
+quartz|64|Nether Quartz
+rabbit_foot|64|Rabbit's Foot
+rabbit_hide|64|Rabbit Hide
+rabbit_spawn_egg|64|Rabbit Spawn Egg
+rabbit_stew|1|Rabbit Stew
+rabbit|64|Raw Rabbit
+rail|64|Rail
+raiser_armor_trim_smithing_template|64|Raiser Armor Trim
+rapid_fertilizer|64|Super Fertilizer
+ravager_spawn_egg|64|Ravager Spawn Egg
+raw_copper_block|64|Block of Raw Copper
+raw_copper|64|Raw Copper
+raw_gold_block|64|Block of Raw Gold
+raw_gold|64|Raw Gold
+raw_iron_block|64|Block of Raw Iron
+raw_iron|64|Raw Iron
+recovery_compass|64|Recovery Compass
+red_bundle|1|Red Bundle
+red_candle_cake|64|Cake with Red Candle
+red_candle|64|Red Candle
+red_carpet|64|Red Carpet
+red_concrete_double_slab|64|Red Concrete Double Slab
+red_concrete_powder|64|Red Concrete Powder
+red_concrete_slab|64|Red Concrete Slab
+red_concrete_stairs|64|Red Concrete Stairs
+red_concrete|64|Red Concrete
+red_cushion|16|Red Cushion
+red_dye|64|Red Dye
+red_flower|64|Red Flower
+red_glazed_terracotta|64|Red Glazed Terracotta
+red_harness|1|Red Harness
+red_mushroom_block|64|Red Mushroom Block
+red_mushroom|64|Red Mushroom
+red_nether_brick_double_slab|64|Red Nether Brick Double Slab
+red_nether_brick_slab|64|Red Nether Brick Slab
+red_nether_brick_stairs|64|Red Nether Brick Stairs
+red_nether_brick_wall|64|Red Nether Brick Wall
+red_nether_brick|64|Red Nether Bricks
+red_poplar_leaves|64|Red Poplar Leaves
+red_sandstone_double_slab|64|Red Sandstone Slab
+red_sandstone_slab|64|Red Sandstone Slab
+red_sandstone_stairs|64|Red Sandstone Stairs
+red_sandstone_wall|64|Red Sandstone Wall
+red_sandstone|64|Red Sandstone
+red_sand|64|Red Sand
+red_shrub|64|Red Shrub
+red_shulker_box|1|Red Shulker Box
+red_stained_glass_pane|64|Red Stained Glass Pane
+red_stained_glass|64|Red Stained Glass
+red_terracotta|64|Red Terracotta
+red_tulip|64|Red Tulip
+red_wool_double_slab|64|Red Wool Double Slab
+red_wool_slab|64|Red Wool Slab
+red_wool_stairs|64|Red Wool Stairs
+red_wool|64|Red Wool
+redstone_block|64|Block of Redstone
+redstone_lamp|64|Redstone Lamp
+redstone_ore|64|Redstone Ore
+redstone_torch|64|Redstone Torch
+redstone_wire|64|Redstone Dust
+redstone|64|Redstone Dust
+reinforced_deepslate|64|Reinforced Deepslate
+repeater|64|Redstone Repeater
+repeating_command_block|64|Repeating Command Block
+resin_block|64|Block of Resin
+resin_brick_double_slab|64|Resin Brick Double Slab
+resin_brick_slab|64|Resin Brick Slab
+resin_brick_stairs|64|Resin Brick Stairs
+resin_brick_wall|64|Resin Brick Wall
+resin_bricks|64|Resin Bricks
+resin_brick|64|Resin Brick
+resin_clump|64|Resin Clump
+respawn_anchor|64|Respawn Anchor
+rib_armor_trim_smithing_template|64|Rib Armor Trim
+rose_bush|64|Rose Bush
+rotten_flesh|64|Rotten Flesh
+saddle|1|Saddle
+salmon_bucket|1|Bucket of Salmon
+salmon_spawn_egg|64|Salmon Spawn Egg
+salmon|64|Raw Salmon
+sandstone_double_slab|64|Sandstone Slab
+sandstone_slab|64|Sandstone Slab
+sandstone_stairs|64|Sandstone Stairs
+sandstone_wall|64|Sandstone Wall
+sandstone|64|Sandstone
+sand|64|Sand
+sapling|64|Sapling
+scaffolding|64|Scaffolding
+scrape_pottery_sherd|64|Scrape Pottery Sherd
+sculk_catalyst|64|Sculk Catalyst
+sculk_sensor|64|Sculk Sensor
+sculk_shrieker|64|Sculk Shrieker
+sculk_vein|64|Sculk Vein
+sculk|64|Sculk
+sea_lantern|64|Sea Lantern
+sea_pickle|64|Sea Pickle
+seagrass|64|Seagrass
+sentry_armor_trim_smithing_template|64|Sentry Armor Trim
+shaper_armor_trim_smithing_template|64|Shaper Armor Trim
+sheaf_pottery_sherd|64|Sheaf Pottery Sherd
+shears|1|Shears
+sheep_spawn_egg|64|Sheep Spawn Egg
+shelf_mushroom|64|Shelf Mushroom
+shelter_pottery_sherd|64|Shelter Pottery Sherd
+shield|1|Shield
+short_dry_grass|64|Short Dry Grass
+short_grass|64|Short Grass
+shroomlight|64|Shroomlight
+shulker_box|64|Shulker Box
+shulker_shell|64|Shulker Shell
+shulker_spawn_egg|64|Shulker Spawn Egg
+silence_armor_trim_smithing_template|64|Silence Armor Trim
+silver_glazed_terracotta|64|Light Gray Glazed Terracotta
+silverfish_spawn_egg|64|Silverfish Spawn Egg
+skeleton_horse_spawn_egg|64|Skeleton Horse Spawn Egg
+skeleton_skull|64|Skeleton Skull
+skeleton_spawn_egg|64|Skeleton Spawn Egg
+skull_banner_pattern|1|Skull Charge Banner Pattern
+skull_pottery_sherd|64|Skull Pottery Sherd
+skull|64|Skull
+slime_ball|64|Slimeball
+slime_spawn_egg|64|Slime Spawn Egg
+slime|64|Slime Block
+small_amethyst_bud|64|Small Amethyst Bud
+small_dripleaf_block|64|Small Dripleaf
+smithing_table|64|Smithing Table
+smoker|64|Smoker
+smooth_basalt|64|Smooth Basalt
+smooth_quartz_double_slab|64|Smooth Quartz Double Slab
+smooth_quartz_slab|64|Smooth Quartz Slab
+smooth_quartz_stairs|64|Smooth Quartz Stairs
+smooth_quartz|64|Smooth Quartz Block
+smooth_red_sandstone_double_slab|64|Smooth Red Sandstone Double Slab
+smooth_red_sandstone_slab|64|Smooth Red Sandstone Slab
+smooth_red_sandstone_stairs|64|Smooth Red Sandstone Stairs
+smooth_red_sandstone|64|Smooth Red Sandstone
+smooth_sandstone_double_slab|64|Smooth Sandstone Double Slab
+smooth_sandstone_slab|64|Smooth Sandstone Slab
+smooth_sandstone_stairs|64|Smooth Sandstone Stairs
+smooth_sandstone|64|Smooth Sandstone
+smooth_stone_double_slab|64|Stone Slab
+smooth_stone_slab|64|Smooth Stone Slab
+smooth_stone|64|Smooth Stone
+sniffer_egg|64|Sniffer Egg
+sniffer_spawn_egg|64|Sniffer Spawn Egg
+snort_pottery_sherd|64|Snort Pottery Sherd
+snout_armor_trim_smithing_template|64|Snout Armor Trim
+snow_golem_spawn_egg|64|Snow Golem Spawn Egg
+snow_layer|64|Snow
+snowball|16|Snowball
+snow|64|Snow Block
+soul_campfire|64|Soul Campfire
+soul_fire|64|Soul Fire
+soul_lantern|64|Soul Lantern
+soul_sand|64|Soul Sand
+soul_soil|64|Soul Soil
+soul_torch|64|Soul Torch
+sparkler|1|Sparkler
+spawn_egg|64|Spawn Egg
+spider_eye|64|Spider Eye
+spider_spawn_egg|64|Spider Spawn Egg
+spire_armor_trim_smithing_template|64|Spire Armor Trim
+splash_potion|1|Splash Water Bottle
+sponge|64|Sponge
+spore_blossom|64|Spore Blossom
+spruce_boat|1|Spruce Boat
+spruce_button|64|Spruce Button
+spruce_chest_boat|1|Spruce Boat with Chest
+spruce_door|64|Spruce Door
+spruce_double_slab|64|Spruce Double Slab
+spruce_fence_gate|64|Spruce Fence Gate
+spruce_fence|64|Spruce Fence
+spruce_hanging_sign|16|Spruce Hanging Sign
+spruce_leaves|64|Spruce Leaves
+spruce_log|64|Spruce Log
+spruce_planks|64|Spruce Planks
+spruce_pressure_plate|64|Spruce Pressure Plate
+spruce_sapling|64|Spruce Sapling
+spruce_shelf|64|Spruce Shelf
+spruce_sign|16|Spruce Sign
+spruce_slab|64|Spruce Slab
+spruce_stairs|64|Spruce Stairs
+spruce_standing_sign|64|Spruce Sign
+spruce_trapdoor|64|Spruce Trapdoor
+spruce_wall_sign|64|Spruce Wall Sign
+spruce_wood|64|Spruce Wood
+spyglass|1|Spyglass
+squid_spawn_egg|64|Squid Spawn Egg
+stained_glass_pane|64|Stained Glass Pane
+stained_glass|64|Stained Glass
+stained_hardened_clay|64|Stained Hardened Clay
+standing_banner|64|Banner
+standing_sign|64|Sign
+sticky_piston_arm_collision|64|Sticky Piston Arm Collision
+sticky_piston|64|Sticky Piston
+stick|64|Stick
+stone_axe|1|Stone Axe
+stone_block_slab2|64|Stone Block Slab2
+stone_block_slab3|64|Stone Block Slab3
+stone_block_slab4|64|Stone Block Slab4
+stone_block_slab|64|Stone Block Slab
+stone_brick_double_slab|64|Stone Brick Slab
+stone_brick_slab|64|Stone Brick Slab
+stone_brick_stairs|64|Stone Brick Stairs
+stone_brick_wall|64|Stone Brick Wall
+stone_bricks|64|Stone Bricks
+stone_button|64|Stone Button
+stone_hoe|1|Stone Hoe
+stone_pickaxe|1|Stone Pickaxe
+stone_pressure_plate|64|Stone Pressure Plate
+stone_shovel|1|Stone Shovel
+stone_spear|1|Stone Spear
+stone_stairs|64|Cobblestone Stairs
+stone_sword|1|Stone Sword
+stonebrick|64|Stonebrick
+stonecutter_block|64|Stonecutter
+stonecutter|64|Stonecutter
+stone|64|Stone
+straw_bed|16|Straw Bed
+stray_spawn_egg|64|Stray Spawn Egg
+strider_spawn_egg|64|Strider Spawn Egg
+string|64|String
+stripped_acacia_log|64|Stripped Acacia Log
+stripped_acacia_wood|64|Stripped Acacia Wood
+stripped_bamboo_block|64|Block of Stripped Bamboo
+stripped_birch_log|64|Stripped Birch Log
+stripped_birch_wood|64|Stripped Birch Wood
+stripped_cherry_log|64|Stripped Cherry Log
+stripped_cherry_wood|64|Stripped Cherry Wood
+stripped_crimson_hyphae|64|Stripped Crimson Hyphae
+stripped_crimson_stem|64|Stripped Crimson Stem
+stripped_dark_oak_log|64|Stripped Dark Oak Log
+stripped_dark_oak_wood|64|Stripped Dark Oak Wood
+stripped_jungle_log|64|Stripped Jungle Log
+stripped_jungle_wood|64|Stripped Jungle Wood
+stripped_mangrove_log|64|Stripped Mangrove Log
+stripped_mangrove_wood|64|Stripped Mangrove Wood
+stripped_oak_log|64|Stripped Oak Log
+stripped_oak_wood|64|Stripped Oak Wood
+stripped_pale_oak_log|64|Stripped Pale Oak Log
+stripped_pale_oak_wood|64|Stripped Pale Oak Wood
+stripped_poplar_log|64|Stripped Poplar Log
+stripped_poplar_wood|64|Stripped Poplar Wood
+stripped_spruce_log|64|Stripped Spruce Log
+stripped_spruce_wood|64|Stripped Spruce Wood
+stripped_warped_hyphae|64|Stripped Warped Hyphae
+stripped_warped_stem|64|Stripped Warped Stem
+structure_block|64|Structure Block
+structure_void|64|Structure Void
+sugar_cane|64|Sugar Cane
+sugar|64|Sugar
+sulfur_brick_double_slab|64|Sulfur Brick Double Slab
+sulfur_brick_slab|64|Sulfur Brick Slab
+sulfur_brick_stairs|64|Sulfur Brick Stairs
+sulfur_brick_wall|64|Sulfur Brick Wall
+sulfur_bricks|64|Sulfur Bricks
+sulfur_cube_bucket|1|Bucket of Sulfur Cube
+sulfur_cube_spawn_egg|64|Sulfur Cube Spawn Egg
+sulfur_double_slab|64|Sulfur Double Slab
+sulfur_slab|64|Sulfur Slab
+sulfur_spike|64|Sulfur Spike
+sulfur_stairs|64|Sulfur Stairs
+sulfur_wall|64|Sulfur Wall
+sulfur|64|Sulfur
+sunflower|64|Sunflower
+suspicious_gravel|64|Suspicious Gravel
+suspicious_sand|64|Suspicious Sand
+suspicious_stew|1|Suspicious Stew
+sweet_berries|64|Sweet Berries
+sweet_berry_bush|64|Sweet Berry Bush
+tadpole_bucket|1|Bucket of Tadpole
+tadpole_spawn_egg|64|Tadpole Spawn Egg
+tall_dry_grass|64|Tall Dry Grass
+tall_grass|64|Tall Grass
+tallgrass|64|Tallgrass
+target|64|Target
+tide_armor_trim_smithing_template|64|Tide Armor Trim
+tinted_glass|64|Tinted Glass
+tnt_minecart|1|Minecart with TNT
+tnt|64|TNT
+torchflower_crop|64|Torchflower Crop
+torchflower_seeds|64|Torchflower Seeds
+torchflower|64|Torchflower
+torch|64|Torch
+totem_of_undying|1|Totem of Undying
+trader_llama_spawn_egg|64|Trader Llama Spawn Egg
+trapdoor|64|Oak Trapdoor
+trapped_chest|64|Trapped Chest
+trial_key|64|Trial Key
+trial_spawner|64|Trial Spawner
+trident|1|Trident
+trip_wire|64|Tripwire
+tripwire_hook|64|Tripwire Hook
+tropical_fish_bucket|1|Bucket of Tropical Fish
+tropical_fish_spawn_egg|64|Tropical Fish Spawn Egg
+tropical_fish|64|Tropical Fish
+tube_coral_block|64|Tube Coral Block
+tube_coral_fan|64|Tube Coral Fan
+tube_coral_wall_fan|64|Tube Coral Wall Fan
+tube_coral|64|Tube Coral
+tuff_brick_double_slab|64|Tuff Brick Double Slab
+tuff_brick_slab|64|Tuff Brick Slab
+tuff_brick_stairs|64|Tuff Brick Stairs
+tuff_brick_wall|64|Tuff Brick Wall
+tuff_bricks|64|Tuff Bricks
+tuff_double_slab|64|Tuff Double Slab
+tuff_slab|64|Tuff Slab
+tuff_stairs|64|Tuff Stairs
+tuff_wall|64|Tuff Wall
+tuff|64|Tuff
+turtle_egg|64|Turtle Egg
+turtle_helmet|1|Turtle Shell
+turtle_scute|64|Turtle Scute
+turtle_spawn_egg|64|Turtle Spawn Egg
+twisting_vines|64|Twisting Vines
+underwater_tnt|64|TNT
+underwater_torch|64|Underwater Torch
+undyed_shulker_box|1|Shulker Box
+unlit_redstone_torch|64|Redstone Torch
+unpowered_comparator|64|Unpowered Comparator
+unpowered_repeater|64|Unpowered Repeater
+vault|64|Vault
+verdant_froglight|64|Verdant Froglight
+vex_armor_trim_smithing_template|64|Vex Armor Trim
+vex_spawn_egg|64|Vex Spawn Egg
+villager_spawn_egg|64|Villager Spawn Egg
+vindicator_spawn_egg|64|Vindicator Spawn Egg
+vine|64|Vines
+wall_banner|64|Wall Banner
+wall_sign|64|Wall Sign
+wandering_trader_spawn_egg|64|Wandering Trader Spawn Egg
+ward_armor_trim_smithing_template|64|Ward Armor Trim
+warden_spawn_egg|64|Warden Spawn Egg
+warped_button|64|Warped Button
+warped_door|64|Warped Door
+warped_double_slab|64|Warped Slab
+warped_fence_gate|64|Warped Fence Gate
+warped_fence|64|Warped Fence
+warped_fungus_on_a_stick|1|Warped Fungus on a Stick
+warped_fungus|64|Warped Fungus
+warped_hanging_sign|16|Warped Hanging Sign
+warped_hyphae|64|Warped Hyphae
+warped_nylium|64|Warped Nylium
+warped_planks|64|Warped Planks
+warped_pressure_plate|64|Warped Pressure Plate
+warped_roots|64|Warped Roots
+warped_shelf|64|Warped Shelf
+warped_sign|16|Warped Sign
+warped_slab|64|Warped Slab
+warped_stairs|64|Warped Stairs
+warped_standing_sign|64|Warped Sign
+warped_stem|64|Warped Stem
+warped_trapdoor|64|Warped Trapdoor
+warped_wall_sign|64|Warped Sign
+warped_wart_block|64|Warped Wart Block
+water_bucket|1|Water Bucket
+waterlily|64|Lily Pad
+water|64|Water
+waxed_chiseled_copper|64|Waxed Chiseled Copper
+waxed_copper_bars|64|Waxed Copper Bars
+waxed_copper_bulb|64|Waxed Copper Bulb
+waxed_copper_chain|64|Waxed Copper Chain
+waxed_copper_chest|64|Waxed Copper Chest
+waxed_copper_door|64|Waxed Copper Door
+waxed_copper_golem_statue|64|Waxed Copper Golem Statue
+waxed_copper_grate|64|Waxed Copper Grate
+waxed_copper_lantern|64|Waxed Copper Lantern
+waxed_copper_trapdoor|64|Waxed Copper Trapdoor
+waxed_copper|64|Waxed Block of Copper
+waxed_cut_copper_slab|64|Waxed Cut Copper Slab
+waxed_cut_copper_stairs|64|Waxed Cut Copper Stairs
+waxed_cut_copper|64|Waxed Cut Copper
+waxed_double_cut_copper_slab|64|Waxed Cut Copper Double Slab
+waxed_exposed_chiseled_copper|64|Waxed Exposed Chiseled Copper
+waxed_exposed_copper_bars|64|Waxed Exposed Copper Bars
+waxed_exposed_copper_bulb|64|Waxed Exposed Copper Bulb
+waxed_exposed_copper_chain|64|Waxed Exposed Copper Chain
+waxed_exposed_copper_chest|64|Waxed Exposed Copper Chest
+waxed_exposed_copper_door|64|Waxed Exposed Copper Door
+waxed_exposed_copper_golem_statue|64|Waxed Exposed Copper Golem Statue
+waxed_exposed_copper_grate|64|Waxed Exposed Copper Grate
+waxed_exposed_copper_lantern|64|Waxed Exposed Copper Lantern
+waxed_exposed_copper_trapdoor|64|Waxed Exposed Copper Trapdoor
+waxed_exposed_copper|64|Waxed Exposed Copper
+waxed_exposed_cut_copper_slab|64|Waxed Exposed Cut Copper Slab
+waxed_exposed_cut_copper_stairs|64|Waxed Exposed Cut Copper Stairs
+waxed_exposed_cut_copper|64|Waxed Exposed Cut Copper
+waxed_exposed_double_cut_copper_slab|64|Waxed Exposed Cut Copper Double Slab
+waxed_exposed_lightning_rod|64|Waxed Exposed Lightning Rod
+waxed_lightning_rod|64|Waxed Lightning Rod
+waxed_oxidized_chiseled_copper|64|Waxed Oxidized Chiseled Copper
+waxed_oxidized_copper_bars|64|Waxed Oxidized Copper Bars
+waxed_oxidized_copper_bulb|64|Waxed Oxidized Copper Bulb
+waxed_oxidized_copper_chain|64|Waxed Oxidized Copper Chain
+waxed_oxidized_copper_chest|64|Waxed Oxidized Copper Chest
+waxed_oxidized_copper_door|64|Waxed Oxidized Copper Door
+waxed_oxidized_copper_golem_statue|64|Waxed Oxidized Copper Golem Statue
+waxed_oxidized_copper_grate|64|Waxed Oxidized Copper Grate
+waxed_oxidized_copper_lantern|64|Waxed Oxidized Copper Lantern
+waxed_oxidized_copper_trapdoor|64|Waxed Oxidized Copper Trapdoor
+waxed_oxidized_copper|64|Waxed Oxidized Copper
+waxed_oxidized_cut_copper_slab|64|Waxed Oxidized Cut Copper Slab
+waxed_oxidized_cut_copper_stairs|64|Waxed Oxidized Cut Copper Stairs
+waxed_oxidized_cut_copper|64|Waxed Oxidized Cut Copper
+waxed_oxidized_double_cut_copper_slab|64|Waxed Oxidized Cut Copper Double Slab
+waxed_oxidized_lightning_rod|64|Waxed Oxidized Lightning Rod
+waxed_weathered_chiseled_copper|64|Waxed Weathered Chiseled Copper
+waxed_weathered_copper_bars|64|Waxed Weathered Copper Bars
+waxed_weathered_copper_bulb|64|Waxed Weathered Copper Bulb
+waxed_weathered_copper_chain|64|Waxed Weathered Copper Chain
+waxed_weathered_copper_chest|64|Waxed Weathered Copper Chest
+waxed_weathered_copper_door|64|Waxed Weathered Copper Door
+waxed_weathered_copper_golem_statue|64|Waxed Weathered Copper Golem Statue
+waxed_weathered_copper_grate|64|Waxed Weathered Copper Grate
+waxed_weathered_copper_lantern|64|Waxed Weathered Copper Lantern
+waxed_weathered_copper_trapdoor|64|Waxed Weathered Copper Trapdoor
+waxed_weathered_copper|64|Waxed Weathered Copper
+waxed_weathered_cut_copper_slab|64|Waxed Weathered Cut Copper Slab
+waxed_weathered_cut_copper_stairs|64|Waxed Weathered Cut Copper Stairs
+waxed_weathered_cut_copper|64|Waxed Weathered Cut Copper
+waxed_weathered_double_cut_copper_slab|64|Waxed Weathered Cut Copper Double Slab
+waxed_weathered_lightning_rod|64|Waxed Weathered Lightning Rod
+wayfinder_armor_trim_smithing_template|64|Wayfinder Armor Trim
+weathered_chiseled_copper|64|Weathered Chiseled Copper
+weathered_copper_bars|64|Weathered Copper Bars
+weathered_copper_bulb|64|Weathered Copper Bulb
+weathered_copper_chain|64|Weathered Copper Chain
+weathered_copper_chest|64|Weathered Copper Chest
+weathered_copper_door|64|Weathered Copper Door
+weathered_copper_golem_statue|64|Weathered Copper Golem Statue
+weathered_copper_grate|64|Weathered Copper Grate
+weathered_copper_lantern|64|Weathered Copper Lantern
+weathered_copper_trapdoor|64|Weathered Copper Trapdoor
+weathered_copper|64|Weathered Copper
+weathered_cut_copper_slab|64|Weathered Cut Copper Slab
+weathered_cut_copper_stairs|64|Weathered Cut Copper Stairs
+weathered_cut_copper|64|Weathered Cut Copper
+weathered_double_cut_copper_slab|64|Weathered Cut Copper Double Slab
+weathered_lightning_rod|64|Weathered Lightning Rod
+web|64|Cobweb
+weeping_vines|64|Weeping Vines
+wet_sponge|64|Wet Sponge
+wheat_seeds|64|Wheat Seeds
+wheat|64|Wheat
+white_bundle|1|White Bundle
+white_candle_cake|64|Cake with White Candle
+white_candle|64|White Candle
+white_carpet|64|White Carpet
+white_concrete_double_slab|64|White Concrete Double Slab
+white_concrete_powder|64|White Concrete Powder
+white_concrete_slab|64|White Concrete Slab
+white_concrete_stairs|64|White Concrete Stairs
+white_concrete|64|White Concrete
+white_cushion|16|White Cushion
+white_dye|64|White Dye
+white_glazed_terracotta|64|White Glazed Terracotta
+white_harness|1|White Harness
+white_shulker_box|1|White Shulker Box
+white_stained_glass_pane|64|White Stained Glass Pane
+white_stained_glass|64|White Stained Glass
+white_terracotta|64|White Terracotta
+white_tulip|64|White Tulip
+white_wool_double_slab|64|White Wool Double Slab
+white_wool_slab|64|White Wool Slab
+white_wool_stairs|64|White Wool Stairs
+white_wool|64|White Wool
+wild_armor_trim_smithing_template|64|Wild Armor Trim
+wildflowers|64|Wildflowers
+wind_charge|64|Wind Charge
+witch_spawn_egg|64|Witch Spawn Egg
+wither_rose|64|Wither Rose
+wither_skeleton_skull|64|Wither Skeleton Skull
+wither_skeleton_spawn_egg|64|Wither Skeleton Spawn Egg
+wither_spawn_egg|64|Wither Spawn Egg
+wolf_armor|1|Wolf Armor
+wolf_spawn_egg|64|Wolf Spawn Egg
+wooden_axe|1|Wooden Axe
+wooden_button|64|Oak Button
+wooden_door|64|Oak Door
+wooden_hoe|1|Wooden Hoe
+wooden_pickaxe|1|Wooden Pickaxe
+wooden_pressure_plate|64|Oak Pressure Plate
+wooden_shovel|1|Wooden Shovel
+wooden_slab|64|Wooden Slab
+wooden_spear|1|Wooden Spear
+wooden_sword|1|Wooden Sword
+wood|64|Wood
+wool|64|Wool
+writable_book|1|Book and Quill
+written_book|16|Written Book
+yellow_bundle|1|Yellow Bundle
+yellow_candle_cake|64|Cake with Yellow Candle
+yellow_candle|64|Yellow Candle
+yellow_carpet|64|Yellow Carpet
+yellow_concrete_double_slab|64|Yellow Concrete Double Slab
+yellow_concrete_powder|64|Yellow Concrete Powder
+yellow_concrete_slab|64|Yellow Concrete Slab
+yellow_concrete_stairs|64|Yellow Concrete Stairs
+yellow_concrete|64|Yellow Concrete
+yellow_cushion|16|Yellow Cushion
+yellow_dye|64|Yellow Dye
+yellow_glazed_terracotta|64|Yellow Glazed Terracotta
+yellow_harness|1|Yellow Harness
+yellow_poplar_leaves|64|Yellow Poplar Leaves
+yellow_shulker_box|1|Yellow Shulker Box
+yellow_stained_glass_pane|64|Yellow Stained Glass Pane
+yellow_stained_glass|64|Yellow Stained Glass
+yellow_terracotta|64|Yellow Terracotta
+yellow_wool_double_slab|64|Yellow Wool Double Slab
+yellow_wool_slab|64|Yellow Wool Slab
+yellow_wool_stairs|64|Yellow Wool Stairs
+yellow_wool|64|Yellow Wool
+zoglin_spawn_egg|64|Zoglin Spawn Egg
+zombie_head|64|Zombie Head
+zombie_horse_spawn_egg|64|Zombie Horse Spawn Egg
+zombie_nautilus_spawn_egg|64|Zombie Nautilus Spawn Egg
+zombie_pigman_spawn_egg|64|Zombified Piglin Spawn Egg
+zombie_spawn_egg|64|Zombie Spawn Egg
+zombie_villager_spawn_egg|64|Zombie Villager Spawn Egg

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,7 +18,7 @@ import (
 	"zephycube/pelicanconsole/pelican"
 )
 
-const appVersion = "1.2.0"
+const appVersion = "1.3.0"
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
 
@@ -47,6 +48,16 @@ const (
 	idHelp
 	idListToggle
 	idShowHidden
+	idClearInv
+	idEdition
+	idEffect
+	idEffApply
+	idEffClear
+	idItem
+	idGive
+	idEffDur
+	idEffLvl
+	idGiveQty
 
 	idCtxConnect = 3001 + iota
 	idCtxHide
@@ -87,6 +98,15 @@ type App struct {
 	lPlayer, cbPlayer                               uintptr
 	lMode, cbMode, bGamemode                        uintptr
 	lTele, bTP, bSummon                             uintptr
+	bClearInv, cbEdition                            uintptr
+	lEffect, cbEffect, lFor, eEffDur, lLvl, eEffLvl uintptr
+	bEffApply, bEffClear                            uintptr
+	lGive, cbItem, lQty, eGiveQty, bGive            uintptr
+	quickLabels                                     []uintptr
+	bedrock                                         bool
+	effView                                         []mcEffect
+	itemView                                        []mcItem
+	itemFilterBusy                                  bool
 	bQuickEdit, lQuickEmpty                         uintptr
 	lConn, lCount, lHost                            uintptr
 	quickBtns                                       []uintptr
@@ -157,8 +177,8 @@ func main() {
 
 	uiFont = makeFont("Segoe UI", 9, FW_NORMAL)
 	boldFont = makeFont("Segoe UI Semibold", 9, FW_BOLD)
-	headFont = makeFont("Segoe UI Semibold", 14, FW_BOLD)
-	titleFont = makeFont("Segoe UI Semibold", 12, FW_BOLD)
+	headFont = makeFont("Segoe UI Semibold", 11, FW_BOLD)
+	titleFont = makeFont("Segoe UI Semibold", 10, FW_BOLD)
 	capFont = makeFont("Segoe UI Semibold", 8, FW_BOLD)
 	monoFont = makeFont("Consolas", 10, FW_NORMAL)
 
@@ -167,7 +187,7 @@ func main() {
 	big, small := loadAppIcon(int(cx)), loadAppIcon(int(csx))
 	registerClass(mainClass, big, small)
 	registerClass(dlgClass, big, small)
-	a.logo = loadAppIcon(S(34))
+	a.logo = loadAppIcon(S(24))
 
 	a.build()
 	a.w.ApplyTheme()
@@ -267,8 +287,10 @@ func surf(hs ...uintptr) {
 }
 
 func (a *App) build() {
-	a.w = &Win{font: uiFont, MinW: S(1060), MinH: S(700)}
-	NewTopWindow(a.w, mainClass, appTitle, WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN, WS_EX_CONTROLPARENT, S(1320), S(860), 0)
+	a.w = &Win{font: uiFont, MinW: S(820), MinH: S(560)}
+	sw, _, _ := pGetSystemMetrics.Call(16) // SM_CXFULLSCREEN
+	shh, _, _ := pGetSystemMetrics.Call(17)
+	NewTopWindow(a.w, mainClass, appTitle, WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN, WS_EX_CONTROLPARENT, min(S(1200), int(sw)*94/100), min(S(760), int(shh)*94/100), 0)
 	mainHwnd = a.w.Hwnd
 	w := a.w
 
@@ -302,12 +324,12 @@ func (a *App) build() {
 	labelColor[a.lState] = a.stateColor
 	a.lStats = w.Label("", SS_RIGHT|SS_ENDELLIPSIS)
 	Muted(a.lStats)
-	a.bStart = w.Btn("▶  Start", idStart, kNormal)
-	a.bStop = w.Btn("■  Stop", idStop, kNormal)
-	a.bRestart = w.Btn("↻  Restart", idRestart, kNormal)
-	a.bKill = w.Btn("✖  Kill", idKill, kDanger)
+	a.bStart = w.Btn("▶ Start", idStart, kNormal)
+	a.bStop = w.Btn("■ Stop", idStop, kNormal)
+	a.bRestart = w.Btn("↻ Restart", idRestart, kNormal)
+	a.bKill = w.Btn("✖ Kill", idKill, kDanger)
 	Show(a.bKill, 0)
-	a.bBackup = w.Btn("Create backup…", idBackup, kNormal)
+	a.bBackup = w.Btn("Backup…", idBackup, kNormal)
 	a.bClear = w.Btn("Clear", idClear, kNormal)
 	a.tAuto = w.Toggle("Auto-scroll", idAutoScroll, true)
 	surf(a.lName, a.lState, a.lStats, a.bStart, a.bStop, a.bRestart, a.bKill, a.bBackup, a.bClear, a.tAuto)
@@ -320,7 +342,7 @@ func (a *App) build() {
 
 	a.eCmd = w.Edit("", 0, idCmd)
 	SetFont(a.eCmd, monoFont)
-	SetCue(a.eCmd, "Type a console command and press Enter  (↑/↓ history, no leading slash)")
+	SetCue(a.eCmd, "Console command — Enter to send, ↑/↓ history")
 	a.bSend = w.Btn("Send", idSend, kPrimary)
 	a.lFeedback = w.Label("", SS_ENDELLIPSIS)
 	w.SetCtlFont(a.lFeedback, boldFont)
@@ -329,6 +351,10 @@ func (a *App) build() {
 	// player actions card
 	a.lPlayer = w.Label("Player", 0)
 	a.cbPlayer = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL, 0, idPlayer, roleCombo)
+	a.bClearInv = w.Btn("Clear inventory", idClearInv, kNormal)
+	a.cbEdition = w.Ctl("COMBOBOX", "", WS_TABSTOP|CBS_DROPDOWNLIST, 0, idEdition, roleCombo)
+	comboSet(a.cbEdition, []string{"Java", "Bedrock"})
+	SendMessage(a.cbEdition, CB_SETCURSEL, 0, 0)
 	a.lMode = w.Label("Gamemode", 0)
 	a.cbMode = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idMode, roleCombo)
 	comboSet(a.cbMode, modes)
@@ -337,13 +363,29 @@ func (a *App) build() {
 	a.lTele = w.Label("Teleport", 0)
 	a.bTP = w.Btn("TP", idTP, kSegment)
 	a.bSummon = w.Btn("Summon", idSummon, kSegment)
-	Muted(a.lPlayer)
-	Muted(a.lMode)
-	Muted(a.lTele)
-	surf(a.lPlayer, a.lMode, a.bGamemode, a.lTele, a.bTP, a.bSummon)
+	a.lEffect = w.Label("Effect", 0)
+	a.cbEffect = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idEffect, roleCombo)
+	a.lFor = w.Label("for", SS_RIGHT)
+	a.eEffDur = w.Edit("infinite", 0, idEffDur)
+	SetCue(a.eEffDur, "seconds")
+	a.lLvl = w.Label("lvl", SS_RIGHT)
+	a.eEffLvl = w.Edit("1", 0, idEffLvl)
+	a.bEffApply = w.Btn("Apply", idEffApply, kSegment)
+	a.bEffClear = w.Btn("Clear", idEffClear, kSegment)
+	a.lGive = w.Label("Give", 0)
+	a.cbItem = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL, 0, idItem, roleCombo)
+	a.lQty = w.Label("×", SS_RIGHT)
+	a.eGiveQty = w.Edit("64", 0, idGiveQty)
+	a.bGive = w.Btn("Give", idGive, kSegment)
+	for _, h := range []uintptr{a.lPlayer, a.lMode, a.lTele, a.lEffect, a.lFor, a.lLvl, a.lGive, a.lQty} {
+		Muted(h)
+	}
+	surf(a.lPlayer, a.bClearInv, a.lMode, a.bGamemode, a.lTele, a.bTP, a.bSummon,
+		a.lEffect, a.lFor, a.lLvl, a.bEffApply, a.bEffClear, a.lGive, a.lQty, a.bGive)
+	a.setEdition(false)
 
 	// quick card
-	a.bQuickEdit = w.Btn("Edit buttons…", idQuickEdit, kNormal)
+	a.bQuickEdit = w.Btn("Edit…", idQuickEdit, kNormal)
 	a.lQuickEmpty = w.Label("No quick commands — click “Edit buttons…” to add some.", 0)
 	Muted(a.lQuickEmpty)
 	surf(a.bQuickEdit, a.lQuickEmpty)
@@ -501,9 +543,9 @@ func (a *App) layout(cw, ch int) {
 	if cw == 0 || ch == 0 {
 		return
 	}
-	m, g, bh, pad, capH := S(14), S(8), S(30), S(12), S(34)
-	topH := S(58)
-	statusH := S(26)
+	m, g, bh, pad, capH := S(8), S(6), S(26), S(8), S(22)
+	topH := S(38)
+	statusH := S(20)
 	bottom := ch - statusH
 	a.cards = a.cards[:0]
 	a.groups = a.groups[:0]
@@ -513,20 +555,20 @@ func (a *App) layout(cw, ch int) {
 	for _, it := range []struct {
 		h uintptr
 		w int
-	}{{a.bHelp, S(70)}, {a.bSettings, S(96)}, {a.bTheme, S(118)}, {a.bList, S(118)}} {
+	}{{a.bHelp, S(54)}, {a.bSettings, S(74)}, {a.bTheme, S(98)}, {a.bList, S(98)}} {
 		x -= it.w
 		Move(it.h, x, (topH-bh)/2, it.w, bh)
 		x -= g
 	}
 
 	// status row
-	Move(a.lConn, m, bottom, S(420), statusH)
-	Move(a.lCount, m+S(430), bottom, S(200), statusH)
-	Move(a.lHost, cw-m-S(420), bottom, S(420), statusH)
+	Move(a.lConn, m+S(2), bottom, S(380), statusH)
+	Move(a.lCount, m+S(390), bottom, S(200), statusH)
+	Move(a.lHost, cw-m-S(200), bottom, S(200), statusH)
 
 	// ---- left column ----
-	lw := S(300)
-	playersH := S(240)
+	lw := S(220)
+	playersH := S(170)
 	in := m + pad
 	iw := lw - 2*pad
 	pcTop := int32(topH)
@@ -541,28 +583,26 @@ func (a *App) layout(cw, ch int) {
 		}
 		sc := RECT{int32(m), int32(topH), int32(m + lw), int32(bottom - g - playersH)}
 		a.cards = append(a.cards, cardDef{sc, func() string { return "SERVERS" }})
-		nh := a.hiddenCount()
-		if nh == 0 {
+		if nh := a.hiddenCount(); nh == 0 {
 			Show(a.bShowHidden, 0)
 		} else {
 			if a.showHidden {
 				SetText(a.bShowHidden, "Hide hidden")
 			} else {
-				SetText(a.bShowHidden, fmt.Sprintf("Show hidden (%d)", nh))
+				SetText(a.bShowHidden, fmt.Sprintf("+%d hidden", nh))
 			}
-			Move(a.bShowHidden, int(sc.Right)-pad-S(130), int(sc.Top)+S(6), S(130), S(26))
+			Move(a.bShowHidden, int(sc.Right)-pad-S(84), int(sc.Top)+S(3), S(84), S(18))
 		}
 		btnY := int(sc.Bottom) - pad - bh
 		Move(a.lv, in, int(sc.Top)+capH, iw, btnY-g-(int(sc.Top)+capH))
 		half := (iw - g) / 2
 		Move(a.bRefresh, in, btnY, half, bh)
 		Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(78)-S(64)-S(6)))
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(78)))
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(64)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(62)-S(44)-S(4)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(62)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(44)))
 		pcTop = sc.Bottom + int32(g)
 	}
-
 	pc := RECT{int32(m), pcTop, int32(m + lw), int32(bottom)}
 	a.playersCard = pc
 	a.cards = append(a.cards, cardDef{pc, func() string {
@@ -571,46 +611,47 @@ func (a *App) layout(cw, ch int) {
 		}
 		return fmt.Sprintf("ONLINE PLAYERS · %d", len(a.players))
 	}})
-	Move(a.bPlayersRefresh, int(pc.Right)-pad-S(36), int(pc.Top)+S(6), S(36), S(26))
+	Move(a.bPlayersRefresh, int(pc.Right)-pad-S(26), int(pc.Top)+S(3), S(26), S(18))
 	Move(a.lbPlayers, in, int(pc.Top)+capH, iw, int(pc.Bottom)-pad-(int(pc.Top)+capH))
 
 	// ---- right column ----
-	rx := m + lw + S(14)
+	rx := m + lw + g
 	rw := cw - rx - m
 	irx, irw := rx+pad, rw-2*pad
 
-	hc := RECT{int32(rx), int32(topH), int32(rx + rw), int32(topH + S(108))}
+	// server header card: one row name/state/stats, one row of buttons
+	hc := RECT{int32(rx), int32(topH), int32(rx + rw), int32(topH + pad + S(22) + S(4) + bh + pad)}
 	a.cards = append(a.cards, cardDef{hc, nil})
-	ty := int(hc.Top) + S(10)
-	nameW := irw * 45 / 100
-	Move(a.lName, irx, ty, nameW, S(36))
-	Move(a.lState, irx+nameW+g, ty, S(130), S(36))
-	Move(a.lStats, irx+nameW+g+S(130), ty, irw-nameW-g-S(130), S(36))
+	ty := int(hc.Top) + pad
+	nameW := irw * 38 / 100
+	Move(a.lName, irx, ty, nameW, S(22))
+	Move(a.lState, irx+nameW+g, ty, S(100), S(22))
+	Move(a.lStats, irx+nameW+g+S(100), ty, irw-nameW-g-S(100), S(22))
 	by := int(hc.Bottom) - pad - bh
 	x = irx
 	for _, b := range []uintptr{a.bStart, a.bStop, a.bRestart, a.bKill} {
-		Move(b, x, by, S(96), bh)
-		x += S(96) + g
+		Move(b, x, by, S(76), bh)
+		x += S(76) + g
 	}
-	Move(a.bBackup, x+S(10), by, S(140), bh)
-	Move(a.tAuto, irx+irw-S(110), by, S(110), bh)
-	Move(a.bClear, irx+irw-S(110)-g-S(72), by, S(72), bh)
+	Move(a.bBackup, x+S(6), by, S(84), bh)
+	Move(a.tAuto, irx+irw-S(92), by, S(92), bh)
+	Move(a.bClear, irx+irw-S(92)-g-S(56), by, S(56), bh)
 	consoleTop := int(hc.Bottom) + g
 
+	gi, op := S(4), S(3)
+
 	// quick card (bottom)
-	qItems := make([]block, len(a.quickBtns))
-	for i, b := range a.quickBtns {
-		qItems[i] = block{items: []layoutItem{{b, S(140), false}}}
-	}
-	qh := bh
-	if len(qItems) > 0 {
-		qh, _ = flowBlocks(qItems, irx, 0, irw, bh, g, 0, 0, false)
+	qBlocks := a.quickBlocks()
+	qh := bh + 2*op
+	if len(qBlocks) > 0 {
+		qh, _ = flowBlocks(qBlocks, irx, 0, irw, bh, g, gi, op, false)
 	}
 	qc := RECT{int32(rx), int32(bottom - (capH + qh + pad)), int32(rx + rw), int32(bottom)}
 	a.cards = append(a.cards, cardDef{qc, func() string { return "QUICK COMMANDS" }})
-	Move(a.bQuickEdit, int(qc.Right)-pad-S(120), int(qc.Top)+S(6), S(120), S(26))
-	if len(qItems) > 0 {
-		flowBlocks(qItems, irx, int(qc.Top)+capH, irw, bh, g, 0, 0, true)
+	Move(a.bQuickEdit, int(qc.Right)-pad-S(56), int(qc.Top)+S(3), S(56), S(18))
+	if len(qBlocks) > 0 {
+		_, outs := flowBlocks(qBlocks, irx, int(qc.Top)+capH, irw, bh, g, gi, op, true)
+		a.groups = append(a.groups, outs...)
 		Show(a.lQuickEmpty, 0)
 	} else {
 		Move(a.lQuickEmpty, irx, int(qc.Top)+capH, irw, bh)
@@ -618,43 +659,75 @@ func (a *App) layout(cw, ch int) {
 	}
 
 	// player actions card
-	gi, op := S(6), S(6)
 	pBlocks := []block{
-		{items: []layoutItem{{a.lPlayer, S(50), false}, {a.cbPlayer, S(210), true}}},
-		{outlined: true, items: []layoutItem{{a.lMode, S(76), false}, {a.cbMode, S(120), true}, {a.bGamemode, S(64), false}}},
-		{outlined: true, items: []layoutItem{{a.lTele, S(68), false}, {a.bTP, S(70), false}, {a.bSummon, S(96), false}}},
+		{items: []layoutItem{{a.lPlayer, S(40), false}, {a.cbPlayer, S(160), true}, {a.cbEdition, S(80), true}, {a.bClearInv, S(104), false}}},
+		{outlined: true, items: []layoutItem{{a.lMode, S(64), false}, {a.cbMode, S(96), true}, {a.bGamemode, S(44), false}}},
+		{outlined: true, items: []layoutItem{{a.lTele, S(58), false}, {a.bTP, S(44), false}, {a.bSummon, S(70), false}}},
+		{outlined: true, items: []layoutItem{{a.lEffect, S(42), false}, {a.cbEffect, S(150), true}, {a.lFor, S(22), false}, {a.eEffDur, S(62), false},
+			{a.lLvl, S(22), false}, {a.eEffLvl, S(32), false}, {a.bEffApply, S(52), false}, {a.bEffClear, S(50), false}}},
+		{outlined: true, items: []layoutItem{{a.lGive, S(32), false}, {a.cbItem, S(190), true}, {a.lQty, S(14), false}, {a.eGiveQty, S(40), false}, {a.bGive, S(48), false}}},
 	}
-	ph, _ := flowBlocks(pBlocks, irx, 0, irw, bh, S(12), gi, op, false)
+	ph, _ := flowBlocks(pBlocks, irx, 0, irw, bh, g, gi, op, false)
 	pac := RECT{int32(rx), qc.Top - int32(g) - int32(capH+ph+pad), int32(rx + rw), qc.Top - int32(g)}
 	a.cards = append(a.cards, cardDef{pac, func() string { return "PLAYER ACTIONS" }})
-	_, outs := flowBlocks(pBlocks, irx, int(pac.Top)+capH, irw, bh, S(12), gi, op, true)
+	_, outs := flowBlocks(pBlocks, irx, int(pac.Top)+capH, irw, bh, g, gi, op, true)
 	a.groups = append(a.groups, outs...)
 
 	// feedback + command row
-	fy := int(pac.Top) - g - S(24)
-	Move(a.lFeedback, rx+S(4), fy, rw-S(4), S(24))
-	cy := fy - S(4) - S(32)
-	Move(a.eCmd, rx, cy, rw-S(96)-g, S(32))
-	Move(a.bSend, rx+rw-S(96), cy, S(96), S(32))
+	fy := int(pac.Top) - g/2 - S(20)
+	Move(a.lFeedback, rx+S(2), fy, rw-S(2), S(20))
+	cy := fy - S(2) - S(28)
+	Move(a.eCmd, rx, cy, rw-S(76)-g, S(28))
+	Move(a.bSend, rx+rw-S(76), cy, S(76), S(28))
 	Move(a.console, rx, consoleTop, rw, cy-g-consoleTop)
 
 	pInvalidateRect.Call(a.w.Hwnd, 0, 0)
 }
 
-func (a *App) paint(hdc uintptr, cw, ch int) {
-	m := S(14)
-	topH := S(58)
-	ls := S(34)
-	if a.logo != 0 {
-		drawIcon(hdc, a.logo, m, (topH-ls)/2, ls)
+// quickBlocks groups quick buttons by their Group (in first-seen order).
+func (a *App) quickBlocks() []block {
+	var out []block
+	idx := map[string]int{}
+	li := 0
+	for i, q := range a.cfg.QuickCommands {
+		if i >= len(a.quickBtns) {
+			break
+		}
+		btn := layoutItem{a.quickBtns[i], S(64), false}
+		if q.Group == "" {
+			btn.w = S(104)
+			out = append(out, block{items: []layoutItem{btn}})
+			continue
+		}
+		if j, ok := idx[q.Group]; ok {
+			out[j].items = append(out[j].items, btn)
+			continue
+		}
+		if li >= len(a.quickLabels) {
+			continue
+		}
+		idx[q.Group] = len(out)
+		out = append(out, block{outlined: true, items: []layoutItem{{a.quickLabels[li], S(58), false}, btn}})
+		li++
 	}
-	tx := int32(m + ls + S(12))
-	drawText(hdc, "ZephyCube", RECT{tx, int32(S(9)), tx + int32(S(400)), int32(S(31))}, th.Text, titleFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE)
+	return out
+}
+
+func (a *App) paint(hdc uintptr, cw, ch int) {
+	m := S(8)
+	topH := S(38)
+	ls := S(24)
+	if a.logo != 0 {
+		drawIcon(hdc, a.logo, m+S(2), (topH-ls)/2, ls)
+	}
+	tx := int32(m + ls + S(10))
+	drawText(hdc, "ZephyCube", RECT{tx, 0, tx + int32(S(84)), int32(topH)}, th.Text, titleFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE)
 	sub := "Pelican Console"
 	if a.cfg.PanelURL != "" {
 		sub += "  ·  " + strings.TrimPrefix(strings.TrimPrefix(a.cfg.PanelURL, "https://"), "http://")
 	}
-	drawText(hdc, sub, RECT{tx, int32(S(30)), tx + int32(S(600)), int32(S(50))}, th.Muted, uiFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS)
+	sx := tx + int32(S(86))
+	drawText(hdc, sub, RECT{sx, 0, sx + int32(S(360)), int32(topH)}, th.Muted, uiFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS)
 	for _, c := range a.cards {
 		cap := ""
 		if c.caption != nil {
@@ -669,7 +742,7 @@ func (a *App) paint(hdc uintptr, cw, ch int) {
 
 func (a *App) invalidatePlayersCaption() {
 	r := a.playersCard
-	r.Bottom = r.Top + int32(S(34))
+	r.Bottom = r.Top + int32(S(22))
 	pInvalidateRect.Call(a.w.Hwnd, uintptr(unsafe.Pointer(&r)), 0)
 }
 
@@ -690,10 +763,46 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 		}
 		return
 	}
+	switch id {
+	case idEdition:
+		if code == CBN_SELCHANGE {
+			a.setEdition(comboSel(a.cbEdition) == 1)
+			if a.cur != nil {
+				if a.cfg.Edition == nil {
+					a.cfg.Edition = map[string]string{}
+				}
+				a.cfg.Edition[a.cur.Identifier] = map[bool]string{true: "bedrock", false: "java"}[a.bedrock]
+				_ = a.cfg.Save()
+			}
+		}
+		return
+	case idItem:
+		switch code {
+		case CBN_EDITCHANGE:
+			a.filterItemCombo()
+		case CBN_SELCHANGE:
+			if i := comboSel(a.cbItem); i >= 0 && i < len(a.itemView) {
+				SetText(a.eGiveQty, fmt.Sprint(a.itemView[i].Stack))
+			}
+		}
+		return
+	}
 	if code != 0 && ctl != 0 {
 		return
 	}
 	switch id {
+	case idClearInv:
+		a.runTemplate("Clear inventory of {player}", "clear {player}")
+	case idEffApply:
+		a.applyEffect()
+	case idEffClear:
+		if a.bedrock {
+			a.runTemplate("Clear effects of {player}", "effect {player} clear")
+		} else {
+			a.runTemplate("Clear effects of {player}", "effect clear {player}")
+		}
+	case idGive:
+		a.give()
 	case idTheme:
 		a.setDark(IsOn(a.bTheme), true)
 	case idListToggle:
@@ -812,7 +921,7 @@ func (a *App) updateButtons() {
 	} else {
 		Show(a.bKill, 0)
 	}
-	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bGamemode, a.bTP, a.bSummon} {
+	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bGamemode, a.bTP, a.bSummon, a.bClearInv, a.bEffApply, a.bEffClear, a.bGive} {
 		Enable(h, on)
 	}
 	for _, h := range a.quickBtns {
@@ -1092,6 +1201,14 @@ func (a *App) connect(s pelican.Server) {
 	a.stopGen++
 	a.cfg.LastServer = s.Identifier
 	_ = a.cfg.Save()
+	switch a.cfg.Edition[s.Identifier] {
+	case "bedrock":
+		a.setEdition(true)
+	case "java":
+		a.setEdition(false)
+	default:
+		a.setEdition(pelican.GuessBedrock(s))
+	}
 
 	a.clearConsole()
 	SetText(a.lName, s.Name)
@@ -1181,6 +1298,10 @@ func (a *App) flushPending() {
 	for _, l := range lines {
 		if l.gen != a.gen {
 			continue
+		}
+		if l.kind == pelican.LineConsole && !a.bedrock && a.cur != nil && a.cfg.Edition[a.cur.Identifier] == "" &&
+			(strings.Contains(l.text, "Player connected:") || strings.Contains(l.text, "Bedrock Edition") || strings.Contains(l.text, "bedrock_server")) {
+			a.setEdition(true)
 		}
 		if l.kind == pelican.LineConsole {
 			if _, _, ok := pelican.ParseJoinLeave(l.text); ok {
@@ -1679,43 +1800,213 @@ func (a *App) backup() {
 	if a.cur == nil {
 		return
 	}
-	def := "Console backup " + time.Now().Format("2006-01-02 15:04")
-	name, ok := promptText(a.w.Hwnd, "Create backup", "Backup name for "+a.cur.Name+" (optional):", def)
-	if !ok {
-		return
-	}
-	a.feedback("… creating backup", fbBusy)
-	c, id := a.client, a.cur.Identifier
+	srv := *a.cur
+	gen := a.gen
+	a.feedback("… checking existing backups", fbBusy)
+	c := a.client
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		b, err := c.CreateBackup(ctx, id, name)
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		list, err := c.ListBackups(ctx, srv.Identifier)
 		cancel()
 		Post(func() {
-			if err != nil {
-				a.feedback("✖ Backup: "+err.Error(), fbErr)
+			if gen != a.gen {
 				return
 			}
-			n := b.Name
-			if n == "" {
-				n = name
+			if err != nil {
+				a.feedback("✖ Backups: "+err.Error(), fbErr)
+				return
 			}
-			a.feedback("… Backup “"+n+"” started — waiting for Wings to finish", fbBusy)
-			a.appendConsole([]pendLine{{a.gen, "── Backup started: " + n + " ──", lineInfo}})
+			limit := srv.FeatureLimits.Backups
+			var victim *pelican.Backup
+			note := ""
+			if limit > 0 {
+				note = fmt.Sprintf("\n%d of %d backup slots used.", len(list), limit)
+				if len(list) >= limit {
+					victim = pelican.OldestRemovable(list)
+					if victim == nil {
+						a.feedback(fmt.Sprintf("✖ Backup limit (%d) reached and every backup is locked or still running.", limit), fbErr)
+						return
+					}
+					note = fmt.Sprintf("\nLimit %d reached — the oldest backup “%s” (%s) will be deleted first.", limit, victim.Name, shortDate(victim.CreatedAt))
+				}
+			}
+			def := "Console backup " + time.Now().Format("2006-01-02 15:04")
+			name, ok := promptText(a.w.Hwnd, "Create backup", "Backup name for "+srv.Name+" (optional):"+note, def)
+			if !ok {
+				a.feedback("", fbNone)
+				return
+			}
+			a.feedback("… creating backup", fbBusy)
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+				defer cancel()
+				if victim != nil {
+					if err := c.DeleteBackup(ctx, srv.Identifier, victim.UUID); err != nil {
+						Post(func() { a.feedback("✖ Couldn't delete oldest backup: "+err.Error(), fbErr) })
+						return
+					}
+				}
+				b, err := c.CreateBackup(ctx, srv.Identifier, name)
+				Post(func() {
+					if err != nil {
+						a.feedback("✖ Backup: "+err.Error(), fbErr)
+						return
+					}
+					n := b.Name
+					if n == "" {
+						n = name
+					}
+					msg := "Backup started: " + n
+					if victim != nil {
+						msg += "  (deleted oldest: " + victim.Name + ")"
+					}
+					a.feedback("… "+msg+" — waiting for Wings", fbBusy)
+					if gen == a.gen {
+						a.appendConsole([]pendLine{{a.gen, "── " + msg + " ──", lineInfo}})
+					}
+				})
+			}()
 		})
 	}()
+}
+
+func shortDate(s string) string {
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t.Local().Format("Jan 2 15:04")
+	}
+	if len(s) >= 16 {
+		return s[:16]
+	}
+	return s
+}
+
+// ---------------- edition-specific player actions ----------------
+
+func (a *App) setEdition(bedrock bool) {
+	a.bedrock = bedrock
+	if bedrock {
+		SendMessage(a.cbEdition, CB_SETCURSEL, 1, 0)
+	} else {
+		SendMessage(a.cbEdition, CB_SETCURSEL, 0, 0)
+	}
+	// effects
+	prev := ""
+	if i := comboSel(a.cbEffect); i >= 0 && i < len(a.effView) {
+		prev = a.effView[i].Name
+	}
+	a.effView = effectList(bedrock)
+	names := make([]string, len(a.effView))
+	sel := 0
+	for i, e := range a.effView {
+		names[i] = e.Name
+		if e.Name == prev || (prev == "" && e.Name == "Speed") {
+			sel = i
+		}
+	}
+	comboSet(a.cbEffect, names)
+	SendMessage(a.cbEffect, CB_SETCURSEL, uintptr(sel), 0)
+	a.filterItemCombo()
+}
+
+func (a *App) filterItemCombo() {
+	if a.itemFilterBusy {
+		return
+	}
+	a.itemFilterBusy = true
+	defer func() { a.itemFilterBusy = false }()
+	text := GetText(a.cbItem)
+	a.itemView = filterItems(itemList(a.bedrock), text, 400)
+	ids := make([]string, len(a.itemView))
+	for i, it := range a.itemView {
+		ids[i] = it.ID
+	}
+	comboSet(a.cbItem, ids)
+	SetText(a.cbItem, text)
+	n := uintptr(len(utf16.Encode([]rune(text))))
+	SendMessage(a.cbItem, CB_SETEDITSEL, 0, n|n<<16)
+	if it := findItem(itemList(a.bedrock), text); it != nil {
+		SetText(a.eGiveQty, fmt.Sprint(it.Stack))
+	}
+}
+
+func (a *App) applyEffect() {
+	i := comboSel(a.cbEffect)
+	if i < 0 || i >= len(a.effView) {
+		a.feedback("✖ Pick an effect.", fbErr)
+		return
+	}
+	e := a.effView[i]
+	dur := strings.ToLower(strings.TrimSpace(GetText(a.eEffDur)))
+	if dur == "" || dur == "inf" || dur == "∞" {
+		dur = "infinite"
+	}
+	if dur != "infinite" {
+		if n, err := strconv.Atoi(dur); err != nil || n < 1 {
+			a.feedback("✖ Duration must be seconds or “infinite”.", fbErr)
+			return
+		}
+	}
+	lvl := 1
+	if t := strings.TrimSpace(GetText(a.eEffLvl)); t != "" {
+		var err error
+		if lvl, err = strconv.Atoi(t); err != nil || lvl < 1 || lvl > 256 {
+			a.feedback("✖ Level must be 1–256.", fbErr)
+			return
+		}
+	}
+	amp := lvl - 1
+	label := fmt.Sprintf("%s %d → {player}", e.Name, lvl)
+	if a.bedrock {
+		a.runTemplate(label, fmt.Sprintf("effect {player} %s %s %d", e.Bedrock, dur, amp))
+	} else {
+		a.runTemplate(label, fmt.Sprintf("effect give {player} minecraft:%s %s %d", e.Java, dur, amp))
+	}
+}
+
+func (a *App) give() {
+	id := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(GetText(a.cbItem)), "minecraft:")))
+	if i := comboSel(a.cbItem); id == "" && i >= 0 && i < len(a.itemView) {
+		id = a.itemView[i].ID
+	}
+	if id == "" || strings.ContainsAny(id, " \t") {
+		a.feedback("✖ Pick an item to give.", fbErr)
+		return
+	}
+	qty, err := strconv.Atoi(strings.TrimSpace(GetText(a.eGiveQty)))
+	if err != nil || qty < 1 {
+		a.feedback("✖ Amount must be a positive number.", fbErr)
+		return
+	}
+	if findItem(itemList(a.bedrock), id) == nil {
+		a.feedback("⚠ “"+id+"” isn't in the item list — sending anyway.", fbWarn)
+	}
+	label := fmt.Sprintf("Give %d %s → {player}", qty, id)
+	if a.bedrock {
+		a.runTemplate(label, fmt.Sprintf("give {player} %s %d", id, qty))
+	} else {
+		a.runTemplate(label, fmt.Sprintf("give {player} minecraft:%s %d", id, qty))
+	}
 }
 
 // ---------------- quick buttons ----------------
 
 func (a *App) rebuildQuick() {
-	for _, h := range a.quickBtns {
+	for _, h := range append(a.quickBtns, a.quickLabels...) {
 		Destroy(h)
 	}
-	a.quickBtns = nil
+	a.quickBtns, a.quickLabels = nil, nil
+	seen := map[string]bool{}
 	for i, q := range a.cfg.QuickCommands {
-		h := a.w.Btn(q.Name, idQuickBase+i, kNormal)
+		h := a.w.Btn(q.Name, idQuickBase+i, kSegment)
 		onSurface[h] = true
 		a.quickBtns = append(a.quickBtns, h)
+		if q.Group != "" && !seen[q.Group] {
+			seen[q.Group] = true
+			l := a.w.Label(q.Group, 0)
+			Muted(l)
+			onSurface[l] = true
+			a.quickLabels = append(a.quickLabels, l)
+		}
 	}
 	a.w.ApplyTheme()
 	a.updateButtons()

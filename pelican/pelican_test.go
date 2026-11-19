@@ -115,7 +115,17 @@ func newFake(t *testing.T) (*fake, *httptest.Server) {
 		w.WriteHeader(204)
 	})
 	mux.HandleFunc("/api/client/servers/abc12345/backups", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			w.Write([]byte(`{"data":[{"attributes":{"uuid":"new","name":"n","is_locked":false,"created_at":"2026-11-19T10:00:00+00:00","completed_at":"2026-11-19T10:01:00+00:00"}},{"attributes":{"uuid":"lockedold","name":"l","is_locked":true,"created_at":"2026-11-01T10:00:00+00:00","completed_at":"x"}},{"attributes":{"uuid":"old","name":"o","is_locked":false,"created_at":"2026-11-10T10:00:00+00:00","completed_at":"x"}}],"meta":{"pagination":{"total_pages":1}}}`))
+			return
+		}
 		w.Write([]byte(`{"object":"backup","attributes":{"uuid":"b1","name":"test","is_successful":false}}`))
+	})
+	mux.HandleFunc("/api/client/servers/abc12345/backups/old", func(w http.ResponseWriter, r *http.Request) {
+		f.mu.Lock()
+		f.power = append(f.power, r.Method+" old")
+		f.mu.Unlock()
+		w.WriteHeader(204)
 	})
 	mux.HandleFunc("/api/client/servers/abc12345/resources", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"object":"stats","attributes":{"current_state":"running","is_suspended":false,"resources":{"memory_bytes":1073741824,"cpu_absolute":12.5,"uptime":3600000}}}`))
@@ -198,6 +208,16 @@ func TestAPI(t *testing.T) {
 	b, err := c.CreateBackup(ctx, "abc12345", "test")
 	if err != nil || b.UUID != "b1" {
 		t.Fatal(err, b)
+	}
+	bl, err := c.ListBackups(ctx, "abc12345")
+	if err != nil || len(bl) != 3 {
+		t.Fatal(err, bl)
+	}
+	if v := OldestRemovable(bl); v == nil || v.UUID != "old" {
+		t.Fatal("oldest", v)
+	}
+	if err := c.DeleteBackup(ctx, "abc12345", "old"); err != nil || f.power[len(f.power)-1] != "DELETE old" {
+		t.Fatal(err, f.power)
 	}
 	r, err := c.Resources(ctx, "abc12345")
 	if err != nil || r.CurrentState != "running" || r.Resources.CPUAbsolute != 12.5 {

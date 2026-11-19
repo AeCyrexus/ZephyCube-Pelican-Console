@@ -617,7 +617,7 @@ func drawButton(d *DRAWITEMSTRUCT) {
 	if f := ctlFont[h]; f != 0 {
 		font = f
 	}
-	rad := S(8)
+	rad := S(6)
 
 	if kind == kToggle {
 		on := toggles[h]
@@ -686,16 +686,16 @@ func drawButton(d *DRAWITEMSTRUCT) {
 
 // card draws a rounded surface panel with an optional caption.
 func card(hdc uintptr, r RECT, caption string) {
-	fillRound(hdc, r, th.Surface, th.Border, S(14))
+	fillRound(hdc, r, th.Surface, th.Border, S(10))
 	if caption != "" {
-		tr := RECT{r.Left + int32(S(14)), r.Top + int32(S(8)), r.Right - int32(S(14)), r.Top + int32(S(30))}
+		tr := RECT{r.Left + int32(S(10)), r.Top + int32(S(3)), r.Right - int32(S(100)), r.Top + int32(S(21))}
 		drawText(hdc, caption, tr, th.Muted, capFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS)
 	}
 }
 
 // outline draws a subtle rounded group frame (inside a card).
 func outline(hdc uintptr, r RECT) {
-	fillRound(hdc, r, th.Surface, th.Border, S(10))
+	fillRound(hdc, r, th.Surface, th.Border, S(8))
 }
 
 func loadAppIcon(size int) uintptr {

@@ -12,6 +12,7 @@ import (
 )
 
 type QuickCmd struct {
+	Group   string `json:"group,omitempty"`
 	Name    string `json:"name"`
 	Command string `json:"command"` // one command per line; placeholders {player} {me} {input} {server}
 }
@@ -25,19 +26,43 @@ type Config struct {
 	LightMode     bool       `json:"light_mode"`
 	ListHidden    bool       `json:"list_hidden"`
 	HiddenServers []string   `json:"hidden_servers"`
+	Edition       map[string]string `json:"edition,omitempty"` // server id → java|bedrock (manual override)
+	QuickVersion  int        `json:"quick_version"`
 	QuickCommands []QuickCmd `json:"quick_commands"`
 	apiKey        string
 }
 
 var defaultQuick = []QuickCmd{
-	{"Day", "time set day"},
-	{"Night", "time set night"},
-	{"Clear weather", "weather clear"},
-	{"List players", "list"},
-	{"Say…", "say {input}"},
-	{"Kick player", "kick {player}"},
-	{"OP player", "op {player}"},
-	{"Clear inventory", "clear {player}"},
+	{"Time", "Day", "time set day"},
+	{"Time", "Night", "time set night"},
+	{"Time", "Noon", "time set noon"},
+	{"Weather", "Clear", "weather clear"},
+	{"Weather", "Rain", "weather rain"},
+	{"Weather", "Thunder", "weather thunder"},
+}
+
+// v1.0–1.2 defaults, removed/replaced in quick-command version 2.
+var legacyQuick = map[string]bool{
+	"time set day": true, "time set night": true, "weather clear": true, "list": true,
+	"say {input}": true, "kick {player}": true, "op {player}": true, "clear {player}": true,
+}
+
+const quickVersion = 2
+
+func (c *Config) migrateQuick() {
+	if c.QuickVersion >= quickVersion {
+		return
+	}
+	var keep []QuickCmd
+	for _, q := range c.QuickCommands {
+		if q.Group == "" && legacyQuick[q.Command] {
+			continue
+		}
+		keep = append(keep, q)
+	}
+	c.QuickCommands = append(append([]QuickCmd(nil), defaultQuick...), keep...)
+	c.QuickVersion = quickVersion
+	_ = c.Save()
 }
 
 func configPath() string {
@@ -53,9 +78,11 @@ func loadConfig() *Config {
 	b, err := os.ReadFile(configPath())
 	if err != nil {
 		c.QuickCommands = append([]QuickCmd(nil), defaultQuick...)
+		c.QuickVersion = quickVersion
 		return c
 	}
 	_ = json.Unmarshal(b, c)
+	defer c.migrateQuick()
 	if c.APIKeyDPAPI != "" {
 		if raw, err := base64.StdEncoding.DecodeString(c.APIKeyDPAPI); err == nil {
 			if plain, err := dpapiDecrypt(raw); err == nil {

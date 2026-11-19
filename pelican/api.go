@@ -141,6 +141,8 @@ type Server struct {
 	Name         string `json:"name"`
 	Node         string `json:"node"`
 	Description  string `json:"description"`
+	Invocation   string `json:"invocation"`
+	DockerImage  string `json:"docker_image"`
 	IsOwner      bool   `json:"server_owner"`
 	Status       string `json:"status"` // install status: "", installing, suspended…
 	IsSuspended  bool   `json:"is_suspended"`
@@ -172,6 +174,7 @@ type Backup struct {
 	UUID         string `json:"uuid"`
 	Name         string `json:"name"`
 	IsSuccessful bool   `json:"is_successful"`
+	IsLocked     bool   `json:"is_locked"`
 	Bytes        int64  `json:"bytes"`
 	CreatedAt    string `json:"created_at"`
 	CompletedAt  string `json:"completed_at"`
@@ -271,4 +274,56 @@ func (c *Client) WebsocketCreds(ctx context.Context, id string) (token, socket s
 		err = fmt.Errorf("panel returned empty websocket credentials")
 	}
 	return r.Data.Token, r.Data.Socket, err
+}
+
+// ListBackups returns all backups of a server (all pages).
+func (c *Client) ListBackups(ctx context.Context, id string) ([]Backup, error) {
+	var all []Backup
+	for page := 1; page <= 50; page++ {
+		var r struct {
+			Data []struct {
+				Attributes Backup `json:"attributes"`
+			} `json:"data"`
+			Meta struct {
+				Pagination struct {
+					TotalPages int `json:"total_pages"`
+				} `json:"pagination"`
+			} `json:"meta"`
+		}
+		if err := c.do(ctx, "GET", fmt.Sprintf("%s/backups?page=%d&per_page=100", sp(id), page), nil, &r); err != nil {
+			return nil, err
+		}
+		for _, d := range r.Data {
+			all = append(all, d.Attributes)
+		}
+		if page >= r.Meta.Pagination.TotalPages {
+			break
+		}
+	}
+	return all, nil
+}
+
+func (c *Client) DeleteBackup(ctx context.Context, id, uuid string) error {
+	return c.do(ctx, "DELETE", sp(id)+"/backups/"+url.PathEscape(uuid), nil, nil)
+}
+
+// OldestRemovable picks the oldest finished, unlocked backup (nil if none).
+func OldestRemovable(bs []Backup) *Backup {
+	var best *Backup
+	for i := range bs {
+		b := &bs[i]
+		if b.IsLocked || b.CompletedAt == "" {
+			continue
+		}
+		if best == nil || b.CreatedAt < best.CreatedAt {
+			best = b
+		}
+	}
+	return best
+}
+
+// GuessBedrock reports whether a server looks like Bedrock (BDS) from its startup/image.
+func GuessBedrock(s Server) bool {
+	h := strings.ToLower(s.Invocation + " " + s.DockerImage + " " + s.Name + " " + s.Description)
+	return strings.Contains(h, "bedrock") || strings.Contains(h, "bedrock_server") || strings.Contains(h, " bds")
 }

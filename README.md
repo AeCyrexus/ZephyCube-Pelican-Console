@@ -1,4 +1,4 @@
-# ZephyCube Pelican Console v1.2.0
+# ZephyCube Pelican Console v1.3.0
 
 Native Windows RCON-style client for Pelican panel servers. Single `.exe`, no browser, no runtime, no installer.
 Talks to the Pelican **Client API** (REST) for commands/power/backups and to the **Wings console websocket** for live output.
@@ -22,10 +22,10 @@ Config: `%APPDATA%\ZephyCube\PelicanConsole\config.json`
 | Console | Live Wings output, auto-reconnect, token refresh. Red = error, yellow = warn, blue = daemon, pink = your commands, green = joins/leaves. Auto-scroll toggle, Ctrl+L clears. |
 | Commands | Enter to send, ↑/↓ history. Feedback line: ✔ green reply OK / ✖ red error detected / HTTP error. |
 | Online players | `list` runs automatically after connecting; joins/leaves are tracked live from the console (Java/Paper and Bedrock BDS). Click a name to fill the Player box. ↻ re-syncs. |
-| Player actions | Player box, **Gamemode** group (mode + Set), **Teleport** group: **TP** (you → player) and **Summon** (player → you). |
+| Player actions | Player box + Java/Bedrock selector (auto-detected, override remembered per server) + **Clear inventory**. **Gamemode** (mode + Set). **Teleport**: **TP** (you → player), **Summon** (player → you). **Effect**: all effects for the edition, duration (default `infinite`, or seconds), level (default 1 = amplifier 0), Apply / Clear. **Give**: searchable item list (type to filter, ▼ to pick; Java 26.1 / Bedrock 1.26.60 IDs), amount defaults to the item's stack size. |
 | Power | Start only when offline, Stop when not offline, Restart when running. **Kill** appears only if Stop/Restart hasn't finished after 15 s, or if you press Stop again while stopping. |
-| Backups | Named backup, completion/failure reported. |
-| Quick commands | Custom buttons, multi-line, placeholders `{player}` `{me}` `{input}` `{server}`. |
+| Backups | Named backup. If the server's backup limit is reached, the oldest finished, unlocked backup is deleted first (shown in the prompt). Completion/failure reported. |
+| Quick commands | Grouped buttons — defaults **Time** (Day, Night, Noon) and **Weather** (Clear, Rain, Thunder). Custom buttons with optional group, multi-line, placeholders `{player}` `{me}` `{input}` `{server}`. |
 
 ## Troubleshooting
 - **Websocket HTTP 403** → Panel URL in Settings doesn't match the panel URL Wings was configured with (scheme + host).
@@ -38,5 +38,5 @@ Pure Go stdlib, no cgo, no dependencies (raw Win32 + own websocket client).
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-H windowsgui -s -w" -o PelicanConsole.exe .
 go test ./pelican
 ```
-Icon/manifest/version resources: `go run ./tools/genres 1.2.0` (writes `rsrc_windows_amd64.syso`, picked up by `go build`).
+Icon/manifest/version resources: `go run ./tools/genres 1.3.0` (writes `rsrc_windows_amd64.syso`, picked up by `go build`).
 Windows: `build.bat`.

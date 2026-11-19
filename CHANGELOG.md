@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0] - 2026-11-19
+### Added
+- Player actions: Clear inventory, Effect (all effects, duration default infinite, level default 1, clear effects), Give (searchable item list, amount defaults to stack size).
+- Java/Bedrock command syntax with auto-detection and per-server override.
+- Quick command groups; defaults are now Time (Day/Night/Noon) and Weather (Clear/Rain/Thunder).
+- Backup rotation: deletes the oldest unlocked backup when the limit is reached.
+### Changed
+- Compact layout for small screens (smaller header, cards, buttons; window fits the screen).
+### Removed
+- Default quick commands List players, Say, Kick player, OP player; Clear inventory moved to Player actions (existing configs migrated).
+
 ## [1.2.0] - 2026-11-19
 ### Added
 - Hide individual servers (right-click menu), "Show hidden (N)" button, Unhide all.
