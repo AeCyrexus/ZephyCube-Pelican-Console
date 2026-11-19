@@ -291,17 +291,19 @@ func Muted(h uintptr) { labelColor[h] = func() uint32 { return th.Muted } }
 // ---------------- window framework ----------------
 
 type Win struct {
-	Hwnd       uintptr
-	OnCommand  func(id, code int, ctl uintptr)
-	OnNotify   func(nm *NMHDR) (uintptr, bool)
-	OnSize     func(w, h int)
-	OnClose    func()
-	OnDestroy  func()
-	OnPaint    func(hdc uintptr, cw, ch int)
-	MinW, MinH int
-	font       uintptr
-	ctls       []ctlInfo
-	modalDone  bool
+	Hwnd      uintptr
+	OnCommand func(id, code int, ctl uintptr)
+	OnNotify  func(nm *NMHDR) (uintptr, bool)
+	OnSize    func(w, h int)
+	OnClose   func()
+	OnDestroy func()
+	OnPaint   func(hdc uintptr, cw, ch int)
+	// OnContextMenu gets WM_CONTEXTMENU (ctl = window right-clicked, screen coords; -1,-1 for keyboard).
+	OnContextMenu func(ctl uintptr, x, y int32) bool
+	MinW, MinH    int
+	font          uintptr
+	ctls          []ctlInfo
+	modalDone     bool
 }
 
 var (
@@ -378,6 +380,10 @@ func wndProc(hwnd, msgp, wp, lp uintptr) uintptr {
 				if r, ok := w.OnNotify((*NMHDR)(unsafe.Pointer(lp))); ok {
 					return r
 				}
+			}
+		case WM_CONTEXTMENU:
+			if w.OnContextMenu != nil && w.OnContextMenu(wp, int32(int16(lp&0xFFFF)), int32(int16(lp>>16&0xFFFF))) {
+				return 0
 			}
 		case WM_SIZE:
 			if w.OnSize != nil {

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0] - 2026-11-19
+### Added
+- Right-click a player in Online Players: Teleport, Summon, Gamemode, Give / Effect (uses the current Player Actions selection), Clear effects / inventory, Kick… / Ban… with a reason, Op / Deop, Copy name, Copy XUID.
+- Player history per server (`players.json`): XUID, first / last seen, session count, current / last session length, total time. Open with History (or double-click a player); filter, kick, ban or pardon players who are offline, copy name / XUID, forget.
+- Background consoles: switching servers keeps the other consoles connected and logging. The server list marks them ○ (connected), ◉ N (unread lines) and ⚠ N (errors); right-click → Disconnect console / Disconnect background consoles.
+### Changed
+- `list` runs once per console session (on first connect); the online list is then kept from console lines only. Bedrock joins come from `Player Spawned:` (not `Player connected:`), leaves from `Player disconnected:`.
+- Lines Wings replays after a websocket reconnect are no longer duplicated in the console.
+
 ## [1.4.0] - 2026-11-19
 ### Added
 - Auto-update from GitHub Releases: checks on launch (toggle in Settings) and via Help → Check for updates; downloads, verifies SHA-256 + ed25519 signature, swaps the exe and restarts.

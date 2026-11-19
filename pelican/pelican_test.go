@@ -307,24 +307,60 @@ func TestPlayerList(t *testing.T) {
 	}
 }
 
-func TestJoinLeave(t *testing.T) {
+func TestPlayerEvent(t *testing.T) {
 	cases := []struct {
-		line   string
-		name   string
-		joined bool
-		ok     bool
+		line string
+		ev   PlayerEvent
+		ok   bool
 	}{
-		{"[12:00:00 INFO]: Steve joined the game", "Steve", true, true},
-		{"[12:00:00] [Server thread/INFO] [minecraft/MinecraftServer]: .Bedrock_Guy left the game", ".Bedrock_Guy", false, true},
-		{"[2026-11-19 13:00:00:123 INFO] Player connected: Ae Cyrexus, xuid: 2535411", "Ae Cyrexus", true, true},
-		{"[2026-11-19 13:00:00:123 INFO] Player disconnected: Bob, xuid: 2535411, pfid: x", "Bob", false, true},
-		{"[12:00:00 INFO]: <Steve> my friend joined the game", "", false, false},
-		{"Player Spawned: Bob xuid: 1", "", false, false},
+		{"[12:00:00 INFO]: Steve joined the game", PlayerEvent{PlayerJoined, "Steve", ""}, true},
+		{"[12:00:00] [Server thread/INFO] [minecraft/MinecraftServer]: .Bedrock_Guy left the game", PlayerEvent{PlayerLeft, ".Bedrock_Guy", ""}, true},
+		{"[2026-11-19 13:00:00:123 INFO] Player connected: Ae Cyrexus, xuid: 2535411", PlayerEvent{PlayerConnected, "Ae Cyrexus", "2535411"}, true},
+		{"[2026-11-19 13:00:01:123 INFO] Player Spawned: Ae Cyrexus xuid: 2535411, pfid: abc", PlayerEvent{PlayerJoined, "Ae Cyrexus", "2535411"}, true},
+		{"[2026-11-19 13:00:00:123 INFO] Player disconnected: Bob, xuid: 2535411, pfid: x", PlayerEvent{PlayerLeft, "Bob", "2535411"}, true},
+		{"NO LOG FILE! - [2026-11-19 13:00:00 INFO] Player Spawned: Bob xuid: 99", PlayerEvent{PlayerJoined, "Bob", "99"}, true},
+		{"[12:00:00 INFO]: <Steve> my friend joined the game", PlayerEvent{}, false},
 	}
 	for _, c := range cases {
-		n, j, ok := ParseJoinLeave(c.line)
-		if n != c.name || j != c.joined || ok != c.ok {
-			t.Errorf("%q → %q %v %v", c.line, n, j, ok)
+		ev, ok := ParsePlayerEvent(c.line)
+		if ev != c.ev || ok != c.ok {
+			t.Errorf("%q → %+v %v", c.line, ev, ok)
 		}
+	}
+}
+
+func TestHistory(t *testing.T) {
+	var h History
+	t0 := time.Date(2026, 11, 19, 12, 0, 0, 0, time.UTC)
+	h.Join("Ae Cyrexus", "253", t0, false)
+	if r := h.Get("ae cyrexus"); r == nil || !r.Online || r.Sessions != 1 || r.XUID != "253" {
+		t.Fatalf("join: %+v", r)
+	}
+	h.Join("Ae Cyrexus", "253", t0.Add(time.Minute), false) // duplicate join keeps session
+	h.Leave("Ae Cyrexus", "253", t0.Add(10*time.Minute))
+	r := h.Get("Ae Cyrexus")
+	if r.Online || r.TotalSec != 600 || r.LastSessSec != 600 || r.Sessions != 1 {
+		t.Fatalf("leave: %+v", r)
+	}
+	// gamertag change: same xuid, new name
+	h.Join("NewTag", "253", t0.Add(time.Hour), false)
+	if h.Get("Ae Cyrexus") != nil || h.Get("newtag") == nil || h.Get("newtag").Sessions != 2 {
+		t.Fatalf("rename: %+v", h.Players)
+	}
+	// approx join (already online at connect) doesn't count a session; EndAll closes it
+	h.Join("Steve", "", t0, true)
+	h.EndAll(t0.Add(30 * time.Second))
+	if s := h.Get("Steve"); s.Online || s.Sessions != 0 || s.TotalSec != 30 || !s.FirstSeen.Equal(t0) {
+		t.Fatalf("approx: %+v", s)
+	}
+	if h.Leave("Nobody", "", t0) != nil {
+		t.Fatal("leave unknown")
+	}
+	h.Join("Alex", "", t0.Add(2*time.Hour), false)
+	if l := h.Sorted(); len(l) != 3 || l[0].Name != "Alex" || l[1].Name != "NewTag" {
+		t.Fatalf("sorted: %v %v", l[0].Name, l[1].Name)
+	}
+	if HumanDuration(3725) != "1h 02m" || HumanDuration(0) != "—" || HumanDuration(59) != "59s" {
+		t.Fatal("duration")
 	}
 }

@@ -153,17 +153,47 @@ func HumanUptime(ms int64) string {
 
 // ---- join / leave tracking ----
 
-var javaJoinRe = regexp.MustCompile(`^([A-Za-z0-9_.*\-]{1,32}) (joined|left) the game\.?$`)
-var bdsJoinRe = regexp.MustCompile(`Player (connected|disconnected): (.+?), xuid`)
+// PlayerEventKind classifies a player console line.
+type PlayerEventKind int
 
-// ParseJoinLeave detects player join/leave lines (Java/Paper and Bedrock BDS).
-func ParseJoinLeave(line string) (name string, joined, ok bool) {
+const (
+	PlayerConnected PlayerEventKind = iota // BDS "Player connected" (not yet in the world)
+	PlayerJoined                           // Java "joined the game", BDS "Player Spawned"
+	PlayerLeft                             // Java "left the game", BDS "Player disconnected"
+)
+
+// PlayerEvent is a parsed join/leave line. XUID is only set on Bedrock.
+type PlayerEvent struct {
+	Kind PlayerEventKind
+	Name string
+	XUID string
+}
+
+var javaJoinRe = regexp.MustCompile(`^([A-Za-z0-9_.*\-]{1,32}) (joined|left) the game\.?$`)
+var bdsSpawnRe = regexp.MustCompile(`Player Spawned: (.+?),? xuid: ?(\d*)`)
+var bdsConnRe = regexp.MustCompile(`Player (connected|disconnected): (.+?), xuid: ?(\d*)`)
+
+// ParsePlayerEvent detects join/leave lines (Java/Paper and Bedrock BDS).
+// On Bedrock the join is "Player Spawned" (the player is actually in the world);
+// "Player connected" is reported as PlayerConnected and should not count as a join.
+func ParsePlayerEvent(line string) (PlayerEvent, bool) {
 	l := cleanPrefix(line)
-	if m := bdsJoinRe.FindStringSubmatch(l); m != nil {
-		return strings.TrimSpace(m[2]), m[1] == "connected", true
+	if m := bdsSpawnRe.FindStringSubmatch(l); m != nil {
+		return PlayerEvent{PlayerJoined, strings.TrimSpace(m[1]), m[2]}, true
+	}
+	if m := bdsConnRe.FindStringSubmatch(l); m != nil {
+		k := PlayerConnected
+		if m[1] == "disconnected" {
+			k = PlayerLeft
+		}
+		return PlayerEvent{k, strings.TrimSpace(m[2]), m[3]}, true
 	}
 	if m := javaJoinRe.FindStringSubmatch(l); m != nil {
-		return m[1], m[2] == "joined", true
+		k := PlayerJoined
+		if m[2] == "left" {
+			k = PlayerLeft
+		}
+		return PlayerEvent{Kind: k, Name: m[1]}, true
 	}
-	return "", false, false
+	return PlayerEvent{}, false
 }

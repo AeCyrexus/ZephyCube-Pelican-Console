@@ -6,6 +6,7 @@ package main
 
 import (
 	"syscall"
+	"unicode/utf16"
 	"unsafe"
 )
 
@@ -69,6 +70,16 @@ var (
 	pCreateSolidBrush = gdi32.NewProc("CreateSolidBrush")
 
 	pGetModuleHandleW = kernel32.NewProc("GetModuleHandleW")
+	pGlobalAlloc      = kernel32.NewProc("GlobalAlloc")
+	pGlobalFree       = kernel32.NewProc("GlobalFree")
+	pGlobalLock       = kernel32.NewProc("GlobalLock")
+	pGlobalUnlock     = kernel32.NewProc("GlobalUnlock")
+
+	pScreenToClient   = user32.NewProc("ScreenToClient")
+	pOpenClipboard    = user32.NewProc("OpenClipboard")
+	pEmptyClipboard   = user32.NewProc("EmptyClipboard")
+	pSetClipboardData = user32.NewProc("SetClipboardData")
+	pCloseClipboard   = user32.NewProc("CloseClipboard")
 	pCreateActCtxW    = kernel32.NewProc("CreateActCtxW")
 	pActivateActCtx   = kernel32.NewProc("ActivateActCtx")
 
@@ -175,6 +186,8 @@ const (
 	LB_DELETESTRING      = 0x0182
 	LB_RESETCONTENT      = 0x0184
 	LB_SETCURSEL         = 0x0186
+	LB_ITEMFROMPOINT     = 0x01A9
+	WM_CONTEXTMENU       = 0x007B
 	LB_GETCURSEL         = 0x0188
 	LBN_SELCHANGE        = 1
 
@@ -490,3 +503,58 @@ func lbSet(h uintptr, items []string) {
 	}
 }
 func lbSel(h uintptr) int { return int(int32(SendMessage(h, LB_GETCURSEL, 0, 0))) }
+
+// ---- clipboard ----
+
+func setClipboard(owner uintptr, s string) bool {
+	u := utf16.Encode([]rune(s + "\x00"))
+	n := uintptr(len(u) * 2)
+	hm, _, _ := pGlobalAlloc.Call(0x0002 /*GMEM_MOVEABLE*/, n)
+	if hm == 0 {
+		return false
+	}
+	p, _, _ := pGlobalLock.Call(hm)
+	if p == 0 {
+		pGlobalFree.Call(hm)
+		return false
+	}
+	copy(unsafe.Slice((*uint16)(unsafe.Pointer(p)), len(u)), u)
+	pGlobalUnlock.Call(hm)
+	if r, _, _ := pOpenClipboard.Call(owner); r == 0 {
+		pGlobalFree.Call(hm)
+		return false
+	}
+	defer pCloseClipboard.Call()
+	pEmptyClipboard.Call()
+	if r, _, _ := pSetClipboardData.Call(13 /*CF_UNICODETEXT*/, hm); r == 0 {
+		pGlobalFree.Call(hm)
+		return false
+	}
+	return true
+}
+
+// lbItemAt returns the listbox row under the screen point, or -1.
+func lbItemAt(h uintptr, x, y int32) int {
+	pt := POINT{x, y}
+	pScreenToClient.Call(h, uintptr(unsafe.Pointer(&pt)))
+	r := SendMessage(h, LB_ITEMFROMPOINT, 0, uintptr(uint16(pt.X))|uintptr(uint16(pt.Y))<<16)
+	if r>>16&0xFFFF != 0 {
+		return -1
+	}
+	return int(r & 0xFFFF)
+}
+
+// lvItemAt returns the listview row under the screen point, or -1.
+func lvItemAt(h uintptr, x, y int32) int {
+	var ht struct {
+		Pt       POINT
+		Flags    uint32
+		IItem    int32
+		ISubItem int32
+		IGroup   int32
+	}
+	ht.Pt = POINT{x, y}
+	pScreenToClient.Call(h, uintptr(unsafe.Pointer(&ht.Pt)))
+	r := SendMessage(h, LVM_FIRST+57 /*LVM_SUBITEMHITTEST*/, 0, uintptr(unsafe.Pointer(&ht)))
+	return int(int32(r))
+}

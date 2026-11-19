@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"sort"
@@ -19,8 +18,8 @@ import (
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.4.0"
-var appVersion = "1.4.0"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.5.0"
+var appVersion = "1.5.0"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -54,6 +53,7 @@ const (
 	idClearInv
 	idUpdate
 	idAutoUpdate
+	idPlayersHistory
 
 	idHelpUpdate = 3101 + iota
 	idHelpReleases
@@ -74,6 +74,8 @@ const (
 	idCtxUnhide
 	idCtxShowHidden
 	idCtxUnhideAll
+	idCtxDisconnect
+	idCtxDisconnectBg
 
 	idQuickBase = 1000
 )
@@ -102,6 +104,7 @@ type App struct {
 	// left
 	lv, bRefresh, bConnect     uintptr
 	lbPlayers, bPlayersRefresh uintptr
+	bPlayersHistory            uintptr
 	// right
 	lName, lState, lStats                           uintptr
 	bStart, bStop, bRestart, bKill, bBackup, bClear uintptr
@@ -131,17 +134,12 @@ type App struct {
 	servers []pelican.Server
 	states  map[string]string
 
-	cur       *pelican.Server
-	con       *pelican.Console
-	gen       int
-	connected bool
-	curState  string
+	cur      *pelican.Server // == &sess.srv
+	sess     *session
+	sessions map[string]*session
+	hist     map[string]*pelican.History
 
-	fbKind  int
-	players []string
-
-	killVisible bool
-	stopGen     int
+	fbKind int
 
 	history []string
 	histIdx int
@@ -151,19 +149,9 @@ type App struct {
 	capLabel  string
 	capLines  []string
 
-	plParser *pelican.PlayerListParser
-	plSilent bool
-	plGen    int
-
 	pendMu    sync.Mutex
 	pending   []pendLine
 	pendSched bool
-}
-
-type pendLine struct {
-	gen  int
-	text string
-	kind pelican.LineKind
 }
 
 const (
@@ -180,7 +168,8 @@ var modes = []string{"survival", "creative", "adventure", "spectator"}
 func init() { runtime.LockOSThread() }
 
 func main() {
-	a := &App{cfg: loadConfig(), states: map[string]string{}}
+	a := &App{cfg: loadConfig(), states: map[string]string{}, sessions: map[string]*session{}}
+	a.loadHistory()
 	initDPI()
 	initDarkModeAPI()
 	initCommonControls()
@@ -280,7 +269,7 @@ func (a *App) handleKey(h, vk uintptr) bool {
 			return true
 		case VK_L:
 			if ctrlDown() {
-				a.clearConsole()
+				a.clearSessionLog()
 				return true
 			}
 		}
@@ -336,7 +325,8 @@ func (a *App) build() {
 	// players card
 	a.lbPlayers = w.Ctl("LISTBOX", "", WS_TABSTOP|WS_VSCROLL|LBS_NOTIFY|LBS_NOINTEGRALHEIGHT, 0, idPlayersList, roleListBox)
 	a.bPlayersRefresh = w.Btn("↻", idPlayersRefresh, kNormal)
-	surf(a.bPlayersRefresh)
+	a.bPlayersHistory = w.Btn("History", idPlayersHistory, kNormal)
+	surf(a.bPlayersRefresh, a.bPlayersHistory)
 
 	// server header card
 	a.lName = w.Label("No server connected", SS_ENDELLIPSIS)
@@ -423,11 +413,10 @@ func (a *App) build() {
 	w.OnSize = func(cw, ch int) { a.layout(cw, ch) }
 	w.OnCommand = a.onCommand
 	w.OnNotify = a.onNotify
+	w.OnContextMenu = a.onContextMenu
 	w.OnPaint = a.paint
 	w.OnClose = func() {
-		if a.con != nil {
-			a.con.Close()
-		}
+		a.closeAll()
 		Destroy(w.Hwnd)
 	}
 	w.OnDestroy = func() { pPostQuitMessage.Call(0) }
@@ -470,7 +459,7 @@ func (a *App) setDark(dark, save bool) {
 }
 
 func (a *App) stateColor() uint32 {
-	switch a.curState {
+	switch a.curState() {
 	case "running":
 		return th.Ok
 	case "offline":
@@ -634,9 +623,10 @@ func (a *App) layout(cw, ch int) {
 		if a.cur == nil {
 			return "ONLINE PLAYERS"
 		}
-		return fmt.Sprintf("ONLINE PLAYERS · %d", len(a.players))
+		return fmt.Sprintf("ONLINE PLAYERS · %d", len(a.curPlayers()))
 	}})
 	Move(a.bPlayersRefresh, int(pc.Right)-pad-S(26), int(pc.Top)+S(3), S(26), S(18))
+	Move(a.bPlayersHistory, int(pc.Right)-pad-S(26)-S(4)-S(58), int(pc.Top)+S(3), S(58), S(18))
 	Move(a.lbPlayers, in, int(pc.Top)+capH, iw, int(pc.Bottom)-pad-(int(pc.Top)+capH))
 
 	// ---- right column ----
@@ -782,8 +772,11 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	}
 	if id == idPlayersList {
 		if code == LBN_SELCHANGE || code == LBN_DBLCLK {
-			if i := lbSel(a.lbPlayers); i >= 0 && i < len(a.players) {
-				SetText(a.cbPlayer, a.players[i])
+			if i := lbSel(a.lbPlayers); i >= 0 && i < len(a.curPlayers()) {
+				SetText(a.cbPlayer, a.curPlayers()[i])
+				if code == LBN_DBLCLK {
+					a.openHistory(a.curPlayers()[i])
+				}
 			}
 		}
 		return
@@ -792,7 +785,8 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	case idEdition:
 		if code == CBN_SELCHANGE {
 			a.setEdition(comboSel(a.cbEdition) == 1)
-			if a.cur != nil {
+			if a.sess != nil {
+				a.sess.bedrock = a.bedrock
 				if a.cfg.Edition == nil {
 					a.cfg.Edition = map[string]string{}
 				}
@@ -858,11 +852,13 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	case idBackup:
 		a.backup()
 	case idClear:
-		a.clearConsole()
+		a.clearSessionLog()
 	case idSend:
 		a.sendFromInput()
 	case idPlayersRefresh:
-		a.refreshPlayers(false)
+		a.refreshPlayers(a.sess, false)
+	case idPlayersHistory:
+		a.openHistory("")
 	case idGamemode:
 		m := modes[max(0, comboSel(a.cbMode))]
 		a.runTemplate("Gamemode "+m, "gamemode "+m+" {player}")
@@ -886,7 +882,11 @@ func (a *App) showShortcuts() {
 			"Enter in command box  → send,  ↑/↓  → history,  Ctrl+L → clear console\r\n\r\n"+
 			"TP  = teleport you → player   (tp {me} {player})\r\n"+
 			"Summon  = bring player → you   (tp {player} {me})\r\n"+
-			"Click a name in Online Players to fill the Player box.\r\n\r\n"+
+			"Click a name in Online Players to fill the Player box;\r\n"+
+			"right-click it for actions (TP, gamemode, give, effect, kick/ban, op, copy name/XUID),\r\n"+
+			"double-click it (or History) for the player history.\r\n\r\n"+
+			"Switching servers keeps the other consoles running in the background:\r\n"+
+			"◉ = unread output, ⚠ = errors. Right-click a server → Disconnect console.\r\n\r\n"+
 			"Quick command placeholders:\r\n"+
 			"  {player}  value of the Player box\r\n"+
 			"  {me}  your in-game name (Settings)\r\n"+
@@ -923,6 +923,15 @@ func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {
 					return CDRF_NEWFONT, true
 				}
 				switch cd.ISubItem {
+				case 0:
+					if ss := a.sessions[a.rows[row].Identifier]; ss != nil && !a.isCur(ss) {
+						switch {
+						case ss.errs > 0:
+							cd.ClrText = th.Danger
+						case ss.unread > 0:
+							cd.ClrText = th.AccentSoft
+						}
+					}
 				case 1:
 					switch a.states[a.rows[row].Identifier] {
 					case "running":
@@ -947,17 +956,18 @@ func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {
 // updateButtons enables/hides controls from the connection + server state.
 func (a *App) updateButtons() {
 	on := a.cur != nil
-	st := a.curState
+	st := a.curState()
+	kill := a.sess != nil && a.sess.killVisible
 	known := st == "running" || st == "offline" || st == "starting" || st == "stopping"
 	Enable(a.bStart, on && (!known || st == "offline"))
 	Enable(a.bStop, on && (!known || st != "offline"))
 	Enable(a.bRestart, on && (!known || st == "running" || st == "starting"))
-	if on && a.killVisible && st != "offline" {
+	if on && kill && st != "offline" {
 		Show(a.bKill, SW_SHOW)
 	} else {
 		Show(a.bKill, 0)
 	}
-	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bGamemode, a.bTP, a.bSummon, a.bClearInv, a.bEffApply, a.bEffClear, a.bGive} {
+	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bPlayersHistory, a.bGamemode, a.bTP, a.bSummon, a.bClearInv, a.bEffApply, a.bEffClear, a.bGive} {
 		Enable(h, on)
 	}
 	for _, h := range a.quickBtns {
@@ -1029,8 +1039,10 @@ func (a *App) refreshServers() {
 			}
 			sort.SliceStable(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
 			a.servers, a.states = list, st
-			if a.cur != nil && a.curState != "" {
-				a.states[a.cur.Identifier] = a.curState
+			for id, ss := range a.sessions {
+				if ss.state != "" {
+					a.states[id] = ss.state
+				}
 			}
 			a.fillList()
 			a.updateCount()
@@ -1062,14 +1074,7 @@ func (a *App) fillList() {
 	SendMessage(a.lv, WM_SETREDRAW, 0, 0)
 	SendMessage(a.lv, LVM_DELETEALLITEMS, 0, 0)
 	for i, s := range a.rows {
-		name := s.Name
-		if a.cur != nil && a.cur.Identifier == s.Identifier {
-			name = "● " + name
-		}
-		if a.isHidden(s.Identifier) {
-			name += "  (hidden)"
-		}
-		lvAddRow(a.lv, i, name, a.states[s.Identifier], s.Node)
+		lvAddRow(a.lv, i, a.rowName(s), a.states[s.Identifier], s.Node)
 		if s.Identifier == sel {
 			lvSelect(a.lv, i)
 		}
@@ -1157,7 +1162,16 @@ func (a *App) serverMenu() {
 	if i >= 0 && i < len(a.rows) {
 		s := a.rows[i]
 		srv = &s
-		appendMenu(menu, MF_STRING, idCtxConnect, "Connect")
+		if ss := a.sessions[s.Identifier]; ss != nil {
+			if a.isCur(ss) {
+				appendMenu(menu, MF_GRAYED, idCtxConnect, "Showing this console")
+			} else {
+				appendMenu(menu, MF_STRING, idCtxConnect, "Switch to console")
+			}
+			appendMenu(menu, MF_STRING, idCtxDisconnect, "Disconnect console")
+		} else {
+			appendMenu(menu, MF_STRING, idCtxConnect, "Connect")
+		}
 		if a.isHidden(s.Identifier) {
 			appendMenu(menu, MF_STRING, idCtxUnhide, "Unhide server")
 		} else {
@@ -1179,6 +1193,16 @@ func (a *App) serverMenu() {
 		f2 |= MF_GRAYED
 	}
 	appendMenu(menu, f2, idCtxUnhideAll, "Unhide all")
+	bg := 0
+	for _, ss := range a.sessions {
+		if !a.isCur(ss) {
+			bg++
+		}
+	}
+	if bg > 0 {
+		appendMenu(menu, MF_SEPARATOR, 0, "")
+		appendMenu(menu, MF_STRING, idCtxDisconnectBg, fmt.Sprintf("Disconnect background consoles (%d)", bg))
+	}
 	var pt POINT
 	pGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
 	cmd, _, _ := pTrackPopupMenu.Call(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON, uintptr(pt.X), uintptr(pt.Y), 0, a.w.Hwnd, 0)
@@ -1186,6 +1210,16 @@ func (a *App) serverMenu() {
 	case idCtxConnect:
 		if srv != nil {
 			a.connect(*srv)
+		}
+	case idCtxDisconnect:
+		if srv != nil {
+			a.disconnect(a.sessions[srv.Identifier])
+		}
+	case idCtxDisconnectBg:
+		for _, ss := range a.sessions {
+			if !a.isCur(ss) {
+				a.disconnect(ss)
+			}
 		}
 	case idCtxHide:
 		if srv != nil {
@@ -1203,417 +1237,6 @@ func (a *App) serverMenu() {
 		a.cfg.HiddenServers = nil
 		_ = a.cfg.Save()
 		a.serversChanged()
-	}
-}
-
-// ---------------- console connection ----------------
-
-func (a *App) connectSelected() {
-	i := lvSelected(a.lv)
-	if i < 0 || i >= len(a.rows) {
-		a.feedback("Select a server in the list first.", fbErr)
-		return
-	}
-	if a.client == nil {
-		return
-	}
-	a.connect(a.rows[i])
-}
-
-func (a *App) connect(s pelican.Server) {
-	if a.con != nil {
-		a.con.Close()
-		a.con = nil
-	}
-	a.gen++
-	gen := a.gen
-	sc := s
-	a.cur = &sc
-	a.connected = false
-	a.curState = a.states[s.Identifier]
-	a.capActive = false
-	a.plParser = nil
-	a.killVisible = false
-	a.stopGen++
-	a.cfg.LastServer = s.Identifier
-	_ = a.cfg.Save()
-	switch a.cfg.Edition[s.Identifier] {
-	case "bedrock":
-		a.setEdition(true)
-	case "java":
-		a.setEdition(false)
-	default:
-		a.setEdition(pelican.GuessBedrock(s))
-	}
-
-	a.clearConsole()
-	SetText(a.lName, s.Name)
-	SetText(a.lStats, "")
-	a.setState(a.curState)
-	a.setPlayers(nil)
-	SetText(a.lConn, "◌ Connecting to console…")
-	a.appendConsole([]pendLine{{gen, fmt.Sprintf("── Connecting to %s (%s) on %s ──", s.Name, s.Identifier, s.Node), lineInfo}})
-	a.feedback("", fbNone)
-	a.fillList()
-	a.updateButtons()
-
-	a.con = a.client.OpenConsole(s.Identifier, pelican.ConsoleHandlers{
-		OnLine: func(l string, k pelican.LineKind) { a.queueLine(gen, l, k) },
-		OnStatus: func(st string) {
-			Post(func() {
-				if gen == a.gen {
-					a.setState(st)
-				}
-			})
-		},
-		OnStats: func(st pelican.Stats) {
-			Post(func() {
-				if gen == a.gen {
-					a.showStats(st)
-				}
-			})
-		},
-		OnConn: func(ok bool, err error) {
-			Post(func() {
-				if gen != a.gen {
-					return
-				}
-				a.connected = ok
-				if ok {
-					SetText(a.lConn, "● Console connected")
-					// sync the online list once the state is known
-					time.AfterFunc(1500*time.Millisecond, func() {
-						Post(func() {
-							if gen == a.gen && a.connected && a.curState == "running" {
-								a.refreshPlayers(true)
-							}
-						})
-					})
-				} else {
-					msg := "○ Console disconnected — retrying"
-					if err != nil {
-						msg += ": " + err.Error()
-						a.appendConsole([]pendLine{{gen, "── " + err.Error() + " — reconnecting… ──", pelican.LineError}})
-					}
-					SetText(a.lConn, msg)
-				}
-			})
-		},
-		OnEvent: func(ev string, args []string) {
-			Post(func() {
-				if gen == a.gen {
-					a.onWSEvent(ev, args)
-				}
-			})
-		},
-	})
-}
-
-const lineInfo pelican.LineKind = 100
-const lineEcho pelican.LineKind = 101
-const lineJoin pelican.LineKind = 102
-
-func (a *App) queueLine(gen int, text string, k pelican.LineKind) {
-	a.pendMu.Lock()
-	a.pending = append(a.pending, pendLine{gen, text, k})
-	sched := !a.pendSched
-	a.pendSched = true
-	a.pendMu.Unlock()
-	if sched {
-		time.AfterFunc(40*time.Millisecond, func() { Post(a.flushPending) })
-	}
-}
-
-func (a *App) flushPending() {
-	a.pendMu.Lock()
-	lines := a.pending
-	a.pending = nil
-	a.pendSched = false
-	a.pendMu.Unlock()
-	var cur []pendLine
-	for _, l := range lines {
-		if l.gen != a.gen {
-			continue
-		}
-		if l.kind == pelican.LineConsole && !a.bedrock && a.cur != nil && a.cfg.Edition[a.cur.Identifier] == "" &&
-			(strings.Contains(l.text, "Player connected:") || strings.Contains(l.text, "Bedrock Edition") || strings.Contains(l.text, "bedrock_server")) {
-			a.setEdition(true)
-		}
-		if l.kind == pelican.LineConsole {
-			if _, _, ok := pelican.ParseJoinLeave(l.text); ok {
-				l.kind = lineJoin
-			}
-		}
-		cur = append(cur, l)
-	}
-	if len(cur) == 0 {
-		return
-	}
-	a.appendConsole(cur)
-	for _, l := range cur {
-		if (l.kind != pelican.LineConsole && l.kind != lineJoin) || strings.TrimSpace(l.text) == "" {
-			continue
-		}
-		if l.kind == lineJoin {
-			if name, joined, ok := pelican.ParseJoinLeave(l.text); ok {
-				if joined {
-					a.addPlayer(name)
-				} else {
-					a.removePlayer(name)
-				}
-			}
-		}
-		if a.capActive {
-			a.capLines = append(a.capLines, l.text)
-		}
-		if a.plParser != nil && a.plParser.Feed(l.text) {
-			a.playersDone()
-		}
-	}
-}
-
-func colorFor(l pendLine) uint32 {
-	switch l.kind {
-	case lineInfo:
-		return colInfo
-	case lineEcho:
-		return colEcho
-	case lineJoin:
-		return colJoin
-	case pelican.LineDaemon:
-		return colDaemon
-	case pelican.LineInstall:
-		return colInstall
-	case pelican.LineError:
-		return colError
-	}
-	if pelican.IsErrorLine(l.text) {
-		return colError
-	}
-	if pelican.IsWarnLine(l.text) {
-		return colWarn
-	}
-	return colText
-}
-
-func (a *App) textLen() int32 {
-	g := GETTEXTLENGTHEX{Flags: 8 | 2, Codepage: 1200} // GTL_NUMCHARS|GTL_PRECISE
-	return int32(SendMessage(a.console, EM_GETTEXTLENGTHEX, uintptr(unsafe.Pointer(&g)), 0))
-}
-
-func (a *App) appendConsole(lines []pendLine) {
-	h := a.console
-	auto := IsOn(a.tAuto)
-	var sel CHARRANGE
-	var scroll POINT
-	SendMessage(h, EM_EXGETSEL, 0, uintptr(unsafe.Pointer(&sel)))
-	SendMessage(h, EM_GETSCROLLPOS, 0, uintptr(unsafe.Pointer(&scroll)))
-	SendMessage(h, WM_SETREDRAW, 0, 0)
-	SendMessage(h, EM_HIDESELECTION, 1, 0)
-
-	i := 0
-	for i < len(lines) {
-		c := colorFor(lines[i])
-		var sb strings.Builder
-		j := i
-		for j < len(lines) && colorFor(lines[j]) == c {
-			sb.WriteString(lines[j].text)
-			sb.WriteString("\r\n")
-			j++
-		}
-		end := a.textLen()
-		cr := CHARRANGE{end, end}
-		SendMessage(h, EM_EXSETSEL, 0, uintptr(unsafe.Pointer(&cr)))
-		cf := CHARFORMATW{DwMask: CFM_COLOR, CrTextColor: c}
-		cf.CbSize = uint32(unsafe.Sizeof(cf))
-		SendMessage(h, EM_SETCHARFORMAT, SCF_SELECTION, uintptr(unsafe.Pointer(&cf)))
-		SendMessageStr(h, EM_REPLACESEL, 0, sb.String())
-		i = j
-	}
-
-	if n := int(SendMessage(h, EM_GETLINECOUNT, 0, 0)); n > 6000 {
-		cut := int32(SendMessage(h, EM_LINEINDEX, uintptr(n-4000), 0))
-		cr := CHARRANGE{0, cut}
-		SendMessage(h, EM_EXSETSEL, 0, uintptr(unsafe.Pointer(&cr)))
-		SendMessageStr(h, EM_REPLACESEL, 0, "")
-		sel.CpMin = max(0, sel.CpMin-cut)
-		sel.CpMax = max(0, sel.CpMax-cut)
-	}
-
-	SendMessage(h, EM_EXSETSEL, 0, uintptr(unsafe.Pointer(&sel)))
-	SendMessage(h, EM_HIDESELECTION, 0, 0)
-	if !auto {
-		SendMessage(h, EM_SETSCROLLPOS, 0, uintptr(unsafe.Pointer(&scroll)))
-	}
-	SendMessage(h, WM_SETREDRAW, 1, 0)
-	if auto {
-		SendMessage(h, WM_VSCROLL, SB_BOTTOM, 0)
-	}
-	pInvalidateRect.Call(h, 0, 1)
-}
-
-func (a *App) clearConsole() {
-	SetText(a.console, "")
-	a.setDefaultCharFormat()
-}
-
-func (a *App) setState(st string) {
-	if st == "" {
-		st = "unknown"
-	}
-	a.curState = st
-	SetText(a.lState, "●  "+strings.ToUpper(st))
-	pInvalidateRect.Call(a.lState, 0, 1)
-	if a.cur != nil {
-		a.setRowState(a.cur.Identifier, st)
-	}
-	switch st {
-	case "offline":
-		SetText(a.lStats, "")
-		a.killVisible = false
-		a.stopGen++
-		a.setPlayers(nil)
-	case "starting":
-		a.setPlayers(nil)
-	case "running":
-		if a.killVisible { // restart got through
-			a.killVisible = false
-			a.stopGen++
-		}
-	}
-	a.updateButtons()
-}
-
-func (a *App) showStats(st pelican.Stats) {
-	mem := pelican.HumanBytes(st.MemoryBytes)
-	if st.MemoryLimitBytes > 0 {
-		mem += " / " + pelican.HumanBytes(st.MemoryLimitBytes)
-	}
-	s := fmt.Sprintf("CPU %.1f%%    RAM %s    Disk %s", st.CPUAbsolute, mem, pelican.HumanBytes(st.DiskBytes))
-	if st.Uptime > 0 {
-		s += "    Up " + pelican.HumanUptime(st.Uptime)
-	}
-	SetText(a.lStats, s)
-}
-
-func (a *App) onWSEvent(ev string, args []string) {
-	if ev != "backup completed" {
-		return
-	}
-	var b struct {
-		IsSuccessful bool  `json:"is_successful"`
-		FileSize     int64 `json:"file_size"`
-	}
-	if len(args) > 0 {
-		_ = json.Unmarshal([]byte(args[0]), &b)
-	}
-	if b.IsSuccessful {
-		msg := "✔ Backup completed"
-		if b.FileSize > 0 {
-			msg += " (" + pelican.HumanBytes(b.FileSize) + ")"
-		}
-		a.feedback(msg, fbOK)
-		a.appendConsole([]pendLine{{a.gen, "── " + msg + " ──", lineInfo}})
-	} else {
-		a.feedback("✖ Backup failed — check the panel's Backups tab", fbErr)
-		a.appendConsole([]pendLine{{a.gen, "── Backup failed ──", pelican.LineError}})
-	}
-}
-
-// ---------------- players ----------------
-
-func (a *App) setPlayers(list []string) {
-	seen := map[string]bool{}
-	var out []string
-	for _, p := range list {
-		k := strings.ToLower(p)
-		if p != "" && !seen[k] {
-			seen[k] = true
-			out = append(out, p)
-		}
-	}
-	sort.Slice(out, func(i, j int) bool { return strings.ToLower(out[i]) < strings.ToLower(out[j]) })
-	a.players = out
-	lbSet(a.lbPlayers, out)
-	text := GetText(a.cbPlayer)
-	comboSet(a.cbPlayer, out)
-	SetText(a.cbPlayer, text)
-	a.invalidatePlayersCaption()
-}
-
-func (a *App) addPlayer(n string) {
-	for _, p := range a.players {
-		if strings.EqualFold(p, n) {
-			return
-		}
-	}
-	a.setPlayers(append(append([]string(nil), a.players...), n))
-}
-
-func (a *App) removePlayer(n string) {
-	var out []string
-	for _, p := range a.players {
-		if !strings.EqualFold(p, n) {
-			out = append(out, p)
-		}
-	}
-	a.setPlayers(out)
-}
-
-func (a *App) refreshPlayers(silent bool) {
-	if a.cur == nil {
-		return
-	}
-	if !a.connected {
-		if !silent {
-			a.feedback("✖ Console not connected — can't read the player list.", fbErr)
-		}
-		return
-	}
-	a.plParser = &pelican.PlayerListParser{}
-	a.plSilent = silent
-	a.plGen++
-	g := a.plGen
-	if !silent {
-		a.appendConsole([]pendLine{{a.gen, "> list", lineEcho}})
-		a.feedback("… fetching online players", fbBusy)
-	}
-	c, id := a.client, a.cur.Identifier
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-		err := c.SendCommand(ctx, id, "list")
-		cancel()
-		Post(func() {
-			if err != nil && g == a.plGen {
-				a.plParser = nil
-				if !silent {
-					a.feedback("✖ list: "+err.Error(), fbErr)
-				}
-			}
-		})
-		time.Sleep(4 * time.Second)
-		Post(func() {
-			if g == a.plGen && a.plParser != nil {
-				a.plParser = nil
-				if !silent {
-					a.feedback("✖ Couldn't read a player list from the console reply.", fbErr)
-				}
-			}
-		})
-	}()
-}
-
-func (a *App) playersDone() {
-	p := a.plParser
-	a.plParser = nil
-	a.setPlayers(p.Players)
-	if a.plSilent {
-		return
-	}
-	if len(p.Players) == 0 {
-		a.feedback("✔ No players online", fbInfo)
-	} else {
-		a.feedback(fmt.Sprintf("✔ %d online: %s", len(p.Players), strings.Join(p.Players, ", ")), fbOK)
 	}
 }
 
@@ -1694,11 +1317,12 @@ func (a *App) sendCommands(cmds []string, label string) {
 		a.feedback("Connect to a server first.", fbErr)
 		return
 	}
+	sess := a.sess
 	echo := make([]pendLine, len(cmds))
 	for i, c := range cmds {
-		echo[i] = pendLine{a.gen, "> " + c, lineEcho}
+		echo[i] = pendLine{sess, "> " + c, lineEcho}
 	}
-	a.appendConsole(echo)
+	a.addLines(sess, echo)
 
 	a.capGen++
 	capGen := a.capGen
@@ -1733,7 +1357,7 @@ func (a *App) sendCommands(cmds []string, label string) {
 				a.feedback("✖ "+label+": "+err.Error(), fbErr)
 				return
 			}
-			if !a.connected {
+			if !sess.connected || !a.isCur(sess) {
 				a.capActive = false
 				a.feedback("✔ Sent: "+label+"  (console not connected — no output to check)", fbOK)
 				return
@@ -1778,8 +1402,9 @@ func (a *App) power(sig string) {
 	if a.cur == nil {
 		return
 	}
-	if sig == "stop" && a.curState == "stopping" {
-		a.killVisible = true
+	sess := a.sess
+	if sig == "stop" && sess.state == "stopping" {
+		sess.killVisible = true
 		a.updateButtons()
 		a.feedback("Server is still stopping — use Kill to force it.", fbWarn)
 		return
@@ -1795,7 +1420,7 @@ func (a *App) power(sig string) {
 		}
 	}
 	a.feedback("… "+sig+" signal", fbBusy)
-	c, id, name, gen := a.client, a.cur.Identifier, a.cur.Name, a.gen
+	c, id, name := a.client, a.cur.Identifier, a.cur.Name
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		err := c.Power(ctx, id, sig)
@@ -1808,24 +1433,24 @@ func (a *App) power(sig string) {
 			a.feedback("✔ "+strings.ToUpper(sig[:1])+sig[1:]+" signal sent to "+name, fbOK)
 			switch sig {
 			case "stop", "restart":
-				a.stopGen++
-				sg := a.stopGen
+				sess.stopGen++
+				sg := sess.stopGen
 				time.AfterFunc(15*time.Second, func() {
 					Post(func() {
-						if gen != a.gen || sg != a.stopGen {
+						if sess.closed || sg != sess.stopGen {
 							return
 						}
-						stuck := a.curState == "stopping" || (sig == "stop" && a.curState == "running")
+						stuck := sess.state == "stopping" || (sig == "stop" && sess.state == "running")
 						if stuck {
-							a.killVisible = true
+							sess.killVisible = true
 							a.updateButtons()
 							a.feedback("⚠ "+name+" hasn't stopped after 15 s — Kill is now available.", fbWarn)
 						}
 					})
 				})
 			case "start", "kill":
-				a.stopGen++
-				a.killVisible = false
+				sess.stopGen++
+				sess.killVisible = false
 				a.updateButtons()
 			}
 		})
@@ -1837,7 +1462,7 @@ func (a *App) backup() {
 		return
 	}
 	srv := *a.cur
-	gen := a.gen
+	sess := a.sess
 	a.feedback("… checking existing backups", fbBusy)
 	c := a.client
 	go func() {
@@ -1845,7 +1470,7 @@ func (a *App) backup() {
 		list, err := c.ListBackups(ctx, srv.Identifier)
 		cancel()
 		Post(func() {
-			if gen != a.gen {
+			if sess.closed {
 				return
 			}
 			if err != nil {
@@ -1897,9 +1522,7 @@ func (a *App) backup() {
 						msg += "  (deleted oldest: " + victim.Name + ")"
 					}
 					a.feedback("… "+msg+" — waiting for Wings", fbBusy)
-					if gen == a.gen {
-						a.appendConsole([]pendLine{{a.gen, "── " + msg + " ──", lineInfo}})
-					}
+					a.addLines(sess, []pendLine{{sess, "── " + msg + " ──", lineInfo}})
 				})
 			}()
 		})
