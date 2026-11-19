@@ -1,8 +1,15 @@
 name: Release
 
+# Every push to main releases the version of the top CHANGELOG entry,
+# unless that version is already released. The tag is created by the release.
 on:
   push:
-    tags: ["v*.*.*"]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -18,20 +25,29 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Version from tag
+      - name: Version from CHANGELOG
         id: v
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
-      - name: Require changelog entry
-        run: grep -q "^## \[${{ steps.v.outputs.version }}\]" CHANGELOG.md || { echo "CHANGELOG.md has no [${{ steps.v.outputs.version }}] section"; exit 1; }
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(grep -m1 -oP '^## \[\K[0-9]+\.[0-9]+\.[0-9]+(?=\])' CHANGELOG.md)
+          [ -n "$v" ] || { echo "No ## [X.Y.Z] entry in CHANGELOG.md"; exit 1; }
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if gh release view "v$v" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v$v is already released; nothing to do."
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Test
+        if: steps.v.outputs.skip != '1'
         run: go test ./pelican ./update
 
       - name: Resources (icon, manifest, version info)
+        if: steps.v.outputs.skip != '1'
         run: go run ./tools/genres "${{ steps.v.outputs.version }}"
 
       - name: Build Windows exe
+        if: steps.v.outputs.skip != '1'
         env:
           GOOS: windows
           GOARCH: amd64
@@ -41,11 +57,13 @@ jobs:
           go build -trimpath -ldflags "-H windowsgui -s -w -X main.appVersion=${{ steps.v.outputs.version }}" -o dist/PelicanConsole.exe .
 
       - name: Sign update manifest
+        if: steps.v.outputs.skip != '1'
         env:
           ZC_SIGNING_KEY: ${{ secrets.ZC_SIGNING_KEY }}
         run: go run ./tools/sign sign "${{ steps.v.outputs.version }}" dist/PelicanConsole.exe
 
       - name: Release notes from CHANGELOG
+        if: steps.v.outputs.skip != '1'
         run: |
           awk -v v="${{ steps.v.outputs.version }}" '
             index($0, "## [" v "]") == 1 { f = 1; next }
@@ -54,8 +72,9 @@ jobs:
           cat notes.md
 
       - name: Publish release
+        if: steps.v.outputs.skip != '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/PelicanConsole.exe dist/update.json \
-            --title "v${{ steps.v.outputs.version }}" --notes-file notes.md
+          gh release create "v${{ steps.v.outputs.version }}" dist/PelicanConsole.exe dist/update.json \
+            --target "$GITHUB_SHA" --title "v${{ steps.v.outputs.version }}" --notes-file notes.md
