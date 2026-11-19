@@ -23,6 +23,8 @@ type Config struct {
 	AdminAll      bool       `json:"admin_all"`
 	LastServer    string     `json:"last_server"`
 	LightMode     bool       `json:"light_mode"`
+	ListHidden    bool       `json:"list_hidden"`
+	HiddenServers []string   `json:"hidden_servers"`
 	QuickCommands []QuickCmd `json:"quick_commands"`
 	apiKey        string
 }

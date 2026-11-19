@@ -17,7 +17,7 @@ import (
 	"zephycube/pelicanconsole/pelican"
 )
 
-const appVersion = "1.1.0"
+const appVersion = "1.2.0"
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
 
@@ -45,6 +45,14 @@ const (
 	idTheme
 	idSettings
 	idHelp
+	idListToggle
+	idShowHidden
+
+	idCtxConnect = 3001 + iota
+	idCtxHide
+	idCtxUnhide
+	idCtxShowHidden
+	idCtxUnhideAll
 
 	idQuickBase = 1000
 )
@@ -63,7 +71,10 @@ type App struct {
 	logo   uintptr
 
 	// header
-	bTheme, bSettings, bHelp uintptr
+	bTheme, bSettings, bHelp, bList uintptr
+	bShowHidden              uintptr
+	rows                     []pelican.Server // visible rows in the list view
+	showHidden               bool
 	// left
 	lv, bRefresh, bConnect   uintptr
 	lbPlayers, bPlayersRefresh uintptr
@@ -201,6 +212,10 @@ func (a *App) handleKey(h, vk uintptr) bool {
 		a.refreshServers()
 		return true
 	}
+	if vk == 'B' && ctrlDown() {
+		a.setListVisible(a.cfg.ListHidden)
+		return true
+	}
 	if h == a.eCmd {
 		switch vk {
 		case VK_RETURN:
@@ -261,6 +276,7 @@ func (a *App) build() {
 	a.bTheme = w.Toggle("Dark mode", idTheme, !a.cfg.LightMode)
 	a.bSettings = w.Btn("Settings", idSettings, kNormal)
 	a.bHelp = w.Btn("Help", idHelp, kNormal)
+	a.bList = w.Toggle("Server list", idListToggle, !a.cfg.ListHidden)
 
 	// servers card
 	a.lv = w.Ctl("SysListView32", "", WS_TABSTOP|LVS_REPORT|LVS_SINGLESEL|LVS_SHOWSELALWAYS|LVS_NOSORTHEADER|LVS_NOCOLUMNHEADER, 0, idList, roleListView)
@@ -270,7 +286,8 @@ func (a *App) build() {
 	lvAddColumn(a.lv, 2, "Node", S(60))
 	a.bRefresh = w.Btn("Refresh", idRefresh, kNormal)
 	a.bConnect = w.Btn("Connect", idConnect, kPrimary)
-	surf(a.bRefresh, a.bConnect)
+	a.bShowHidden = w.Btn("", idShowHidden, kNormal)
+	surf(a.bRefresh, a.bConnect, a.bShowHidden)
 
 	// players card
 	a.lbPlayers = w.Ctl("LISTBOX", "", WS_TABSTOP|WS_VSCROLL|LBS_NOTIFY|LBS_NOINTEGRALHEIGHT, 0, idPlayersList, roleListBox)
@@ -496,7 +513,7 @@ func (a *App) layout(cw, ch int) {
 	for _, it := range []struct {
 		h uintptr
 		w int
-	}{{a.bHelp, S(70)}, {a.bSettings, S(96)}, {a.bTheme, S(118)}} {
+	}{{a.bHelp, S(70)}, {a.bSettings, S(96)}, {a.bTheme, S(118)}, {a.bList, S(118)}} {
 		x -= it.w
 		Move(it.h, x, (topH-bh)/2, it.w, bh)
 		x -= g
@@ -510,20 +527,43 @@ func (a *App) layout(cw, ch int) {
 	// ---- left column ----
 	lw := S(300)
 	playersH := S(240)
-	sc := RECT{int32(m), int32(topH), int32(m + lw), int32(bottom - g - playersH)}
-	a.cards = append(a.cards, cardDef{sc, func() string { return "SERVERS" }})
-	in := int(sc.Left) + pad
+	in := m + pad
 	iw := lw - 2*pad
-	btnY := int(sc.Bottom) - pad - bh
-	Move(a.lv, in, int(sc.Top)+capH, iw, btnY-g-(int(sc.Top)+capH))
-	half := (iw - g) / 2
-	Move(a.bRefresh, in, btnY, half, bh)
-	Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
-	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(78)-S(64)-S(6)))
-	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(78)))
-	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(64)))
+	pcTop := int32(topH)
+	listCtls := []uintptr{a.lv, a.bRefresh, a.bConnect, a.bShowHidden}
+	if a.cfg.ListHidden {
+		for _, h := range listCtls {
+			Show(h, 0)
+		}
+	} else {
+		for _, h := range listCtls {
+			Show(h, SW_SHOW)
+		}
+		sc := RECT{int32(m), int32(topH), int32(m + lw), int32(bottom - g - playersH)}
+		a.cards = append(a.cards, cardDef{sc, func() string { return "SERVERS" }})
+		nh := a.hiddenCount()
+		if nh == 0 {
+			Show(a.bShowHidden, 0)
+		} else {
+			if a.showHidden {
+				SetText(a.bShowHidden, "Hide hidden")
+			} else {
+				SetText(a.bShowHidden, fmt.Sprintf("Show hidden (%d)", nh))
+			}
+			Move(a.bShowHidden, int(sc.Right)-pad-S(130), int(sc.Top)+S(6), S(130), S(26))
+		}
+		btnY := int(sc.Bottom) - pad - bh
+		Move(a.lv, in, int(sc.Top)+capH, iw, btnY-g-(int(sc.Top)+capH))
+		half := (iw - g) / 2
+		Move(a.bRefresh, in, btnY, half, bh)
+		Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(78)-S(64)-S(6)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(78)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(64)))
+		pcTop = sc.Bottom + int32(g)
+	}
 
-	pc := RECT{int32(m), sc.Bottom + int32(g), int32(m + lw), int32(bottom)}
+	pc := RECT{int32(m), pcTop, int32(m + lw), int32(bottom)}
 	a.playersCard = pc
 	a.cards = append(a.cards, cardDef{pc, func() string {
 		if a.cur == nil {
@@ -656,6 +696,11 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	switch id {
 	case idTheme:
 		a.setDark(IsOn(a.bTheme), true)
+	case idListToggle:
+		a.setListVisible(IsOn(a.bList))
+	case idShowHidden:
+		a.showHidden = !a.showHidden
+		a.serversChanged()
 	case idSettings:
 		a.openSettings()
 	case idQuickEdit:
@@ -665,7 +710,8 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	case idHelp:
 		MsgBox(a.w.Hwnd, "Shortcuts & placeholders",
 			"Double-click / Enter on a server  → connect\r\n"+
-				"F5  → refresh server list\r\n"+
+				"F5  → refresh server list,  Ctrl+B → show/hide the server list\r\n"+
+				"Right-click a server  → hide / unhide, show hidden servers\r\n"+
 				"Enter in command box  → send,  ↑/↓  → history,  Ctrl+L → clear console\r\n\r\n"+
 				"TP  = teleport you → player   (tp {me} {player})\r\n"+
 				"Summon  = bring player → you   (tp {player} {me})\r\n"+
@@ -713,6 +759,9 @@ func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {
 	case NM_DBLCLK:
 		a.connectSelected()
 		return 0, true
+	case NM_RCLICK:
+		a.serverMenu()
+		return 0, true
 	case NM_CUSTOMDRAW:
 		cd := (*NMLVCUSTOMDRAW)(unsafe.Pointer(nm))
 		switch cd.Nmcd.DrawStage {
@@ -723,10 +772,14 @@ func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {
 		case CDDS_ITEM | CDDS_SUBITEM | CDDS_PREPAINT:
 			row := int(cd.Nmcd.ItemSpec)
 			cd.ClrText = th.Text
-			if row >= 0 && row < len(a.servers) {
+			if row >= 0 && row < len(a.rows) {
+				if a.isHidden(a.rows[row].Identifier) {
+					cd.ClrText = th.Muted
+					return CDRF_NEWFONT, true
+				}
 				switch cd.ISubItem {
 				case 1:
-					switch a.states[a.servers[row].Identifier] {
+					switch a.states[a.rows[row].Identifier] {
 					case "running":
 						cd.ClrText = th.Ok
 					case "offline":
@@ -835,11 +888,10 @@ func (a *App) refreshServers() {
 				a.states[a.cur.Identifier] = a.curState
 			}
 			a.fillList()
-			SetText(a.lCount, fmt.Sprintf("%d servers", len(list)))
+			a.updateCount()
 			if a.cur == nil && a.cfg.LastServer != "" {
-				for i, s := range a.servers {
+				for _, s := range a.servers {
 					if s.Identifier == a.cfg.LastServer {
-						lvSelect(a.lv, i)
 						a.connect(s)
 						break
 					}
@@ -851,17 +903,26 @@ func (a *App) refreshServers() {
 
 func (a *App) fillList() {
 	sel := ""
-	if i := lvSelected(a.lv); i >= 0 && i < len(a.servers) {
-		sel = a.servers[i].Identifier
+	if i := lvSelected(a.lv); i >= 0 && i < len(a.rows) {
+		sel = a.rows[i].Identifier
 	} else if a.cur != nil {
 		sel = a.cur.Identifier
 	}
+	a.rows = a.rows[:0]
+	for _, s := range a.servers {
+		if a.showHidden || !a.isHidden(s.Identifier) {
+			a.rows = append(a.rows, s)
+		}
+	}
 	SendMessage(a.lv, WM_SETREDRAW, 0, 0)
 	SendMessage(a.lv, LVM_DELETEALLITEMS, 0, 0)
-	for i, s := range a.servers {
+	for i, s := range a.rows {
 		name := s.Name
 		if a.cur != nil && a.cur.Identifier == s.Identifier {
 			name = "● " + name
+		}
+		if a.isHidden(s.Identifier) {
+			name += "  (hidden)"
 		}
 		lvAddRow(a.lv, i, name, a.states[s.Identifier], s.Node)
 		if s.Identifier == sel {
@@ -874,10 +935,129 @@ func (a *App) fillList() {
 
 func (a *App) setRowState(id, state string) {
 	a.states[id] = state
-	for i, s := range a.servers {
+	for i, s := range a.rows {
 		if s.Identifier == id {
 			lvSetText(a.lv, i, 1, state)
 		}
+	}
+}
+
+// ---------------- hidden servers / list visibility ----------------
+
+func (a *App) isHidden(id string) bool {
+	for _, h := range a.cfg.HiddenServers {
+		if h == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *App) hiddenCount() int {
+	n := 0
+	for _, s := range a.servers {
+		if a.isHidden(s.Identifier) {
+			n++
+		}
+	}
+	return n
+}
+
+func (a *App) setHidden(id string, hide bool) {
+	var out []string
+	for _, h := range a.cfg.HiddenServers {
+		if h != id {
+			out = append(out, h)
+		}
+	}
+	if hide {
+		out = append(out, id)
+	}
+	a.cfg.HiddenServers = out
+	_ = a.cfg.Save()
+	a.serversChanged()
+}
+
+func (a *App) serversChanged() {
+	if a.hiddenCount() == 0 {
+		a.showHidden = false
+	}
+	a.fillList()
+	a.updateCount()
+	r := ClientRect(a.w.Hwnd)
+	a.layout(int(r.Right), int(r.Bottom))
+}
+
+func (a *App) updateCount() {
+	t := fmt.Sprintf("%d servers", len(a.servers))
+	if n := a.hiddenCount(); n > 0 {
+		t += fmt.Sprintf(" · %d hidden", n)
+	}
+	SetText(a.lCount, t)
+}
+
+func (a *App) setListVisible(on bool) {
+	a.cfg.ListHidden = !on
+	_ = a.cfg.Save()
+	SetOn(a.bList, on)
+	r := ClientRect(a.w.Hwnd)
+	a.layout(int(r.Right), int(r.Bottom))
+}
+
+func (a *App) serverMenu() {
+	i := lvSelected(a.lv)
+	menu, _, _ := pCreatePopupMenu.Call()
+	defer pDestroyMenu.Call(menu)
+	var srv *pelican.Server
+	if i >= 0 && i < len(a.rows) {
+		s := a.rows[i]
+		srv = &s
+		appendMenu(menu, MF_STRING, idCtxConnect, "Connect")
+		if a.isHidden(s.Identifier) {
+			appendMenu(menu, MF_STRING, idCtxUnhide, "Unhide server")
+		} else {
+			appendMenu(menu, MF_STRING, idCtxHide, "Hide server")
+		}
+		appendMenu(menu, MF_SEPARATOR, 0, "")
+	}
+	n := a.hiddenCount()
+	flags := uint32(MF_STRING)
+	if a.showHidden {
+		flags |= MF_CHECKED
+	}
+	if n == 0 {
+		flags |= MF_GRAYED
+	}
+	appendMenu(menu, flags, idCtxShowHidden, fmt.Sprintf("Show hidden servers (%d)", n))
+	f2 := uint32(MF_STRING)
+	if n == 0 {
+		f2 |= MF_GRAYED
+	}
+	appendMenu(menu, f2, idCtxUnhideAll, "Unhide all")
+	var pt POINT
+	pGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
+	cmd, _, _ := pTrackPopupMenu.Call(menu, TPM_RETURNCMD|TPM_RIGHTBUTTON, uintptr(pt.X), uintptr(pt.Y), 0, a.w.Hwnd, 0)
+	switch int(cmd) {
+	case idCtxConnect:
+		if srv != nil {
+			a.connect(*srv)
+		}
+	case idCtxHide:
+		if srv != nil {
+			a.setHidden(srv.Identifier, true)
+			a.feedback("Hidden “"+srv.Name+"” — right-click the list → Show hidden servers to bring it back.", fbInfo)
+		}
+	case idCtxUnhide:
+		if srv != nil {
+			a.setHidden(srv.Identifier, false)
+		}
+	case idCtxShowHidden:
+		a.showHidden = !a.showHidden
+		a.serversChanged()
+	case idCtxUnhideAll:
+		a.cfg.HiddenServers = nil
+		_ = a.cfg.Save()
+		a.serversChanged()
 	}
 }
 
@@ -885,14 +1065,14 @@ func (a *App) setRowState(id, state string) {
 
 func (a *App) connectSelected() {
 	i := lvSelected(a.lv)
-	if i < 0 || i >= len(a.servers) {
+	if i < 0 || i >= len(a.rows) {
 		a.feedback("Select a server in the list first.", fbErr)
 		return
 	}
 	if a.client == nil {
 		return
 	}
-	a.connect(a.servers[i])
+	a.connect(a.rows[i])
 }
 
 func (a *App) connect(s pelican.Server) {
@@ -1541,4 +1721,9 @@ func (a *App) rebuildQuick() {
 	a.updateButtons()
 	r := ClientRect(a.w.Hwnd)
 	a.layout(int(r.Right), int(r.Bottom))
+}
+
+func appendMenu(menu uintptr, flags uint32, id uintptr, text string) {
+	t := u16(text)
+	pAppendMenuW.Call(menu, uintptr(flags), id, uintptr(unsafe.Pointer(t)))
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2026-11-19
+### Added
+- Hide individual servers (right-click menu), "Show hidden (N)" button, Unhide all.
+- "Server list" header toggle / Ctrl+B to hide the whole server list (remembered).
+
 ## [1.1.0] - 2026-11-19
 ### Added
 - ZephyCube logo as exe/window/header icon (embedded resources + version info).

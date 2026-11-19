@@ -1,4 +1,4 @@
-# ZephyCube Pelican Console v1.1.0
+# ZephyCube Pelican Console v1.2.0
 
 Native Windows RCON-style client for Pelican panel servers. Single `.exe`, no browser, no runtime, no installer.
 Talks to the Pelican **Client API** (REST) for commands/power/backups and to the **Wings console websocket** for live output.
@@ -18,7 +18,7 @@ Config: `%APPDATA%\ZephyCube\PelicanConsole\config.json`
 | Area | What it does |
 |---|---|
 | Look | ZephyCube logo (exe + window icon), dark mode by default, light mode via header toggle or Settings. |
-| Server list | All servers (paginated), state colour-coded, node. F5 refreshes. Double-click / Enter / Connect. Last server auto-connects. |
+| Server list | All servers (paginated), state colour-coded, node. F5 refreshes. Double-click / Enter / Connect. Last server auto-connects. Right-click → **Hide server** / Unhide / Show hidden / Unhide all. **Server list** header toggle (Ctrl+B) hides the whole list; Online Players then fills the column. |
 | Console | Live Wings output, auto-reconnect, token refresh. Red = error, yellow = warn, blue = daemon, pink = your commands, green = joins/leaves. Auto-scroll toggle, Ctrl+L clears. |
 | Commands | Enter to send, ↑/↓ history. Feedback line: ✔ green reply OK / ✖ red error detected / HTTP error. |
 | Online players | `list` runs automatically after connecting; joins/leaves are tracked live from the console (Java/Paper and Bedrock BDS). Click a name to fill the Player box. ↻ re-syncs. |
@@ -38,5 +38,5 @@ Pure Go stdlib, no cgo, no dependencies (raw Win32 + own websocket client).
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-H windowsgui -s -w" -o PelicanConsole.exe .
 go test ./pelican
 ```
-Icon/manifest/version resources: `go run ./tools/genres 1.1.0` (writes `rsrc_windows_amd64.syso`, picked up by `go build`).
+Icon/manifest/version resources: `go run ./tools/genres 1.2.0` (writes `rsrc_windows_amd64.syso`, picked up by `go build`).
 Windows: `build.bat`.

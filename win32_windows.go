@@ -57,6 +57,9 @@ var (
 	pGetSystemMetrics        = user32.NewProc("GetSystemMetrics")
 	pCreateIconFromResourceEx = user32.NewProc("CreateIconFromResourceEx")
 	pGetKeyState             = user32.NewProc("GetKeyState")
+	pTrackPopupMenu          = user32.NewProc("TrackPopupMenu")
+	pDestroyMenu             = user32.NewProc("DestroyMenu")
+	pGetCursorPos            = user32.NewProc("GetCursorPos")
 
 	pCreateFontW   = gdi32.NewProc("CreateFontW")
 	pSetTextColor  = gdi32.NewProc("SetTextColor")
@@ -210,6 +213,11 @@ const (
 	MF_STRING    = 0x0
 	MF_POPUP     = 0x10
 	MF_SEPARATOR = 0x800
+	MF_CHECKED   = 0x8
+	MF_GRAYED    = 0x1
+	TPM_RETURNCMD   = 0x100
+	TPM_RIGHTBUTTON = 0x2
+	NM_RCLICK       = -5
 
 	MB_OK              = 0x0
 	MB_YESNO           = 0x4
