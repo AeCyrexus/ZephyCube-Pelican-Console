@@ -54,7 +54,7 @@ jobs:
         run: |
           if [ -d tools/genres ]; then GOOS= GOARCH= go run ./tools/genres "${{ matrix.v }}"; fi
           mkdir -p dist
-          go build -trimpath -ldflags "-H windowsgui -s -w" -o dist/PelicanConsole.exe .
+          go build -trimpath -buildvcs=false -ldflags "-H windowsgui -s -w" -o dist/PelicanConsole.exe .
 
       - name: Verify matches shipped binary
         if: steps.chk.outputs.skip != '1'
