@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2026-11-19
+### Added
+- Auto-update from GitHub Releases: checks on launch (toggle in Settings) and via Help → Check for updates; downloads, verifies SHA-256 + ed25519 signature, swaps the exe and restarts.
+- Help menu (updates, release notes, shortcuts, about).
+- GitHub Actions release workflow (tag `vX.Y.Z` → build, sign, publish).
+- MIT license, third-party notices.
+
 ## [1.3.0] - 2026-11-19
 ### Added
 - Player actions: Clear inventory, Effect (all effects, duration default infinite, level default 1, clear effects), Give (searchable item list, amount defaults to stack size).

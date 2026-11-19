@@ -159,7 +159,7 @@ func (w *wsConn) writeFrame(op byte, payload []byte) error {
 }
 
 func (w *wsConn) WriteText(b []byte) error { return w.writeFrame(opText, b) }
-func (w *wsConn) Ping() error             { return w.writeFrame(opPing, nil) }
+func (w *wsConn) Ping() error              { return w.writeFrame(opPing, nil) }
 
 // ReadMessage returns the next complete text/binary message, answering pings transparently.
 // readTimeout is applied per frame (0 = none).

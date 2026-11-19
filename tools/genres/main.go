@@ -271,7 +271,7 @@ func coff(leaves []leaf) []byte {
 	out.Write(sec)
 	for _, r := range relocs {
 		binary.Write(&out, le, uint32(r))
-		binary.Write(&out, le, uint32(0))  // symbol index
+		binary.Write(&out, le, uint32(0)) // symbol index
 		binary.Write(&out, le, uint16(3)) // IMAGE_REL_AMD64_ADDR32NB
 	}
 	// symbol table: .rsrc section symbol

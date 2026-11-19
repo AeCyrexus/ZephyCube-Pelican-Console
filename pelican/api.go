@@ -181,10 +181,10 @@ type Backup struct {
 }
 
 type Account struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Admin    bool   `json:"admin"`
-	RootAdmin bool  `json:"root_admin"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Admin     bool   `json:"admin"`
+	RootAdmin bool   `json:"root_admin"`
 }
 
 // ---------- Endpoints ----------

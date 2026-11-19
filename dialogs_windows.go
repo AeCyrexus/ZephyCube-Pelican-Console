@@ -83,7 +83,7 @@ func promptText(owner uintptr, title, label, def string) (string, bool) {
 // ---------- settings ----------
 
 func (a *App) openSettings() {
-	cw, ch := S(540), S(330)
+	cw, ch := S(540), S(360)
 	d := newDialog(a.w.Hwnd, "Settings", cw, ch)
 	m, lw := S(16), S(130)
 	ew := cw - 2*m - lw
@@ -104,6 +104,7 @@ func (a *App) openSettings() {
 	SetCue(eIGN, "used for {me}, TP and Summon")
 	tAdmin := d.Toggle("List every server on the panel (admin key)", 104, a.cfg.AdminAll)
 	tDark := d.Toggle("Dark mode", 106, !a.cfg.LightMode)
+	tUpd := d.Toggle("Check for updates on launch", 109, !a.cfg.NoUpdateCheck)
 	hint := d.Label("API key is encrypted with Windows DPAPI (this Windows user only).", 0)
 	Muted(hint)
 	for _, l := range []uintptr{l1, l2, l3} {
@@ -119,7 +120,8 @@ func (a *App) openSettings() {
 	}
 	Move(tAdmin, m+lw, row(3), ew, S(24))
 	Move(tDark, m+lw, row(3)+S(30), ew, S(24))
-	Move(hint, m+lw, row(3)+S(60), ew, S(22))
+	Move(tUpd, m+lw, row(3)+S(60), ew, S(24))
+	Move(hint, m+lw, row(3)+S(90), ew, S(22))
 	by := ch - m - S(32)
 	Move(bTest, m, by, S(140), S(32))
 	Move(bCancel, cw-m-S(100), by, S(100), S(32))
@@ -168,6 +170,7 @@ func (a *App) openSettings() {
 			a.cfg.IGN = strings.TrimSpace(GetText(eIGN))
 			a.cfg.AdminAll = IsOn(tAdmin)
 			a.cfg.LightMode = !IsOn(tDark)
+			a.cfg.NoUpdateCheck = !IsOn(tUpd)
 			if err := a.cfg.Save(); err != nil {
 				MsgBox(d.Hwnd, "Save failed", err.Error(), MB_ICONERROR)
 				return

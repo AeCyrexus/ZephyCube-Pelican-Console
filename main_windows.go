@@ -16,9 +16,12 @@ import (
 	"unsafe"
 
 	"zephycube/pelicanconsole/pelican"
+	"zephycube/pelicanconsole/update"
 )
 
-const appVersion = "1.3.0"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.4.0"
+var appVersion = "1.4.0"
+
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
 
@@ -49,6 +52,13 @@ const (
 	idListToggle
 	idShowHidden
 	idClearInv
+	idUpdate
+	idAutoUpdate
+
+	idHelpUpdate = 3101 + iota
+	idHelpReleases
+	idHelpKeys
+	idHelpAbout
 	idEdition
 	idEffect
 	idEffApply
@@ -83,11 +93,14 @@ type App struct {
 
 	// header
 	bTheme, bSettings, bHelp, bList uintptr
-	bShowHidden              uintptr
-	rows                     []pelican.Server // visible rows in the list view
-	showHidden               bool
+	bShowHidden                     uintptr
+	bUpdate                         uintptr
+	pendingRel                      *update.Release
+	pendingMan                      *update.Manifest
+	rows                            []pelican.Server // visible rows in the list view
+	showHidden                      bool
 	// left
-	lv, bRefresh, bConnect   uintptr
+	lv, bRefresh, bConnect     uintptr
 	lbPlayers, bPlayersRefresh uintptr
 	// right
 	lName, lState, lStats                           uintptr
@@ -111,8 +124,8 @@ type App struct {
 	lConn, lCount, lHost                            uintptr
 	quickBtns                                       []uintptr
 
-	cards  []cardDef
-	groups []RECT
+	cards       []cardDef
+	groups      []RECT
 	playersCard RECT
 
 	servers []pelican.Server
@@ -124,7 +137,7 @@ type App struct {
 	connected bool
 	curState  string
 
-	fbKind int
+	fbKind  int
 	players []string
 
 	killVisible bool
@@ -194,6 +207,13 @@ func main() {
 	Show(a.w.Hwnd, SW_SHOW)
 	pUpdateWindow.Call(a.w.Hwnd)
 
+	cleanupOldExe()
+	if from := updatedFromArg(); from != "" {
+		Post(func() { a.feedback("✔ Updated from v"+from+" to v"+appVersion, fbOK) })
+	}
+	if !a.cfg.NoUpdateCheck {
+		time.AfterFunc(4*time.Second, func() { Post(func() { a.checkUpdates(false) }) })
+	}
 	Post(func() {
 		if a.cfg.PanelURL == "" || a.cfg.apiKey == "" {
 			a.openSettings()
@@ -299,6 +319,8 @@ func (a *App) build() {
 	a.bSettings = w.Btn("Settings", idSettings, kNormal)
 	a.bHelp = w.Btn("Help", idHelp, kNormal)
 	a.bList = w.Toggle("Server list", idListToggle, !a.cfg.ListHidden)
+	a.bUpdate = w.Btn("Update", idUpdate, kPrimary)
+	Show(a.bUpdate, 0)
 
 	// servers card
 	a.lv = w.Ctl("SysListView32", "", WS_TABSTOP|LVS_REPORT|LVS_SINGLESEL|LVS_SHOWSELALWAYS|LVS_NOSORTHEADER|LVS_NOCOLUMNHEADER, 0, idList, roleListView)
@@ -555,7 +577,10 @@ func (a *App) layout(cw, ch int) {
 	for _, it := range []struct {
 		h uintptr
 		w int
-	}{{a.bHelp, S(54)}, {a.bSettings, S(74)}, {a.bTheme, S(98)}, {a.bList, S(98)}} {
+	}{{a.bHelp, S(54)}, {a.bSettings, S(74)}, {a.bTheme, S(98)}, {a.bList, S(98)}, {a.bUpdate, S(120)}} {
+		if it.h == a.bUpdate && a.pendingMan == nil {
+			continue
+		}
 		x -= it.w
 		Move(it.h, x, (topH-bh)/2, it.w, bh)
 		x -= g
@@ -817,21 +842,9 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	case idRefresh:
 		a.refreshServers()
 	case idHelp:
-		MsgBox(a.w.Hwnd, "Shortcuts & placeholders",
-			"Double-click / Enter on a server  → connect\r\n"+
-				"F5  → refresh server list,  Ctrl+B → show/hide the server list\r\n"+
-				"Right-click a server  → hide / unhide, show hidden servers\r\n"+
-				"Enter in command box  → send,  ↑/↓  → history,  Ctrl+L → clear console\r\n\r\n"+
-				"TP  = teleport you → player   (tp {me} {player})\r\n"+
-				"Summon  = bring player → you   (tp {player} {me})\r\n"+
-				"Click a name in Online Players to fill the Player box.\r\n\r\n"+
-				"Quick command placeholders:\r\n"+
-				"  {player}  value of the Player box\r\n"+
-				"  {me}  your in-game name (Settings)\r\n"+
-				"  {input}  asks you when clicked\r\n"+
-				"  {server}  connected server name\r\n"+
-				"Multiple lines = multiple commands, sent in order.\r\n\r\n"+
-				"Kill only appears if Stop/Restart hasn't finished after 15 s\r\n(or if you press Stop again while it is stopping).", MB_ICONINFORMATION)
+		a.helpMenu()
+	case idUpdate:
+		a.installUpdate()
 	case idConnect:
 		a.connectSelected()
 	case idStart:
@@ -858,6 +871,29 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 	case idSummon:
 		a.runTemplate("Summon {player}", "tp {player} {me}")
 	}
+}
+
+func (a *App) relayout() {
+	r := ClientRect(a.w.Hwnd)
+	a.layout(int(r.Right), int(r.Bottom))
+}
+
+func (a *App) showShortcuts() {
+	MsgBox(a.w.Hwnd, "Shortcuts & placeholders",
+		"Double-click / Enter on a server  → connect\r\n"+
+			"F5  → refresh server list,  Ctrl+B → show/hide the server list\r\n"+
+			"Right-click a server  → hide / unhide, show hidden servers\r\n"+
+			"Enter in command box  → send,  ↑/↓  → history,  Ctrl+L → clear console\r\n\r\n"+
+			"TP  = teleport you → player   (tp {me} {player})\r\n"+
+			"Summon  = bring player → you   (tp {player} {me})\r\n"+
+			"Click a name in Online Players to fill the Player box.\r\n\r\n"+
+			"Quick command placeholders:\r\n"+
+			"  {player}  value of the Player box\r\n"+
+			"  {me}  your in-game name (Settings)\r\n"+
+			"  {input}  asks you when clicked\r\n"+
+			"  {server}  connected server name\r\n"+
+			"Multiple lines = multiple commands, sent in order.\r\n\r\n"+
+			"Kill only appears if Stop/Restart hasn't finished after 15 s\r\n(or if you press Stop again while it is stopping).", MB_ICONINFORMATION)
 }
 
 func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {

@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Version from tag
+        id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Require changelog entry
+        run: grep -q "^## \[${{ steps.v.outputs.version }}\]" CHANGELOG.md || { echo "CHANGELOG.md has no [${{ steps.v.outputs.version }}] section"; exit 1; }
+
+      - name: Test
+        run: go test ./pelican ./update
+
+      - name: Resources (icon, manifest, version info)
+        run: go run ./tools/genres "${{ steps.v.outputs.version }}"
+
+      - name: Build Windows exe
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p dist
+          go build -trimpath -ldflags "-H windowsgui -s -w -X main.appVersion=${{ steps.v.outputs.version }}" -o dist/PelicanConsole.exe .
+
+      - name: Sign update manifest
+        env:
+          ZC_SIGNING_KEY: ${{ secrets.ZC_SIGNING_KEY }}
+        run: go run ./tools/sign sign "${{ steps.v.outputs.version }}" dist/PelicanConsole.exe
+
+      - name: Release notes from CHANGELOG
+        run: |
+          awk -v v="${{ steps.v.outputs.version }}" '
+            index($0, "## [" v "]") == 1 { f = 1; next }
+            /^## \[/ { f = 0 }
+            f' CHANGELOG.md > notes.md
+          cat notes.md
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/PelicanConsole.exe dist/update.json \
+            --title "v${{ steps.v.outputs.version }}" --notes-file notes.md

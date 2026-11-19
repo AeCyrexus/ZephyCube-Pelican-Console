@@ -14,23 +14,23 @@ var (
 	dwmapi = syscall.NewLazyDLL("dwmapi.dll")
 	ntdll  = syscall.NewLazyDLL("ntdll.dll")
 
-	pBeginPaint      = user32.NewProc("BeginPaint")
-	pEndPaint        = user32.NewProc("EndPaint")
-	pFillRect        = user32.NewProc("FillRect")
-	pDrawTextW       = user32.NewProc("DrawTextW")
-	pDrawIconEx      = user32.NewProc("DrawIconEx")
-	pLoadImageW      = user32.NewProc("LoadImageW")
-	pRedrawWindow    = user32.NewProc("RedrawWindow")
-	pRoundRect       = gdi32.NewProc("RoundRect")
-	pCreatePen       = gdi32.NewProc("CreatePen")
-	pSelectObject    = gdi32.NewProc("SelectObject")
-	pDeleteObject    = gdi32.NewProc("DeleteObject")
-	pMoveToEx        = gdi32.NewProc("MoveToEx")
-	pLineTo          = gdi32.NewProc("LineTo")
-	pGetStockObject  = gdi32.NewProc("GetStockObject")
+	pBeginPaint            = user32.NewProc("BeginPaint")
+	pEndPaint              = user32.NewProc("EndPaint")
+	pFillRect              = user32.NewProc("FillRect")
+	pDrawTextW             = user32.NewProc("DrawTextW")
+	pDrawIconEx            = user32.NewProc("DrawIconEx")
+	pLoadImageW            = user32.NewProc("LoadImageW")
+	pRedrawWindow          = user32.NewProc("RedrawWindow")
+	pRoundRect             = gdi32.NewProc("RoundRect")
+	pCreatePen             = gdi32.NewProc("CreatePen")
+	pSelectObject          = gdi32.NewProc("SelectObject")
+	pDeleteObject          = gdi32.NewProc("DeleteObject")
+	pMoveToEx              = gdi32.NewProc("MoveToEx")
+	pLineTo                = gdi32.NewProc("LineTo")
+	pGetStockObject        = gdi32.NewProc("GetStockObject")
 	pDwmSetWindowAttribute = dwmapi.NewProc("DwmSetWindowAttribute")
-	pRtlGetVersion   = ntdll.NewProc("RtlGetVersion")
-	pGetProcAddress  = kernel32.NewProc("GetProcAddress")
+	pRtlGetVersion         = ntdll.NewProc("RtlGetVersion")
+	pGetProcAddress        = kernel32.NewProc("GetProcAddress")
 )
 
 const (
@@ -45,9 +45,9 @@ const (
 	BN_CLICKED   = 0
 	LBN_DBLCLK   = 2
 
-	ODS_SELECTED = 0x1
-	ODS_DISABLED = 0x4
-	ODS_FOCUS    = 0x10
+	ODS_SELECTED    = 0x1
+	ODS_DISABLED    = 0x4
+	ODS_FOCUS       = 0x10
 	ODS_NOFOCUSRECT = 0x200
 
 	DT_CENTER       = 0x1
@@ -57,13 +57,13 @@ const (
 	DT_END_ELLIPSIS = 0x8000
 	DT_LEFT         = 0x0
 
-	NM_CUSTOMDRAW        = -12
-	CDDS_PREPAINT        = 0x1
-	CDDS_ITEM            = 0x10000
-	CDDS_SUBITEM         = 0x20000
-	CDRF_DODEFAULT       = 0x0
-	CDRF_NEWFONT         = 0x2
-	CDRF_NOTIFYITEMDRAW  = 0x20
+	NM_CUSTOMDRAW          = -12
+	CDDS_PREPAINT          = 0x1
+	CDDS_ITEM              = 0x10000
+	CDDS_SUBITEM           = 0x20000
+	CDRF_DODEFAULT         = 0x0
+	CDRF_NEWFONT           = 0x2
+	CDRF_NOTIFYITEMDRAW    = 0x20
 	CDRF_NOTIFYSUBITEMDRAW = 0x20
 
 	LVM_SETBKCOLOR     = LVM_FIRST + 1
@@ -121,7 +121,7 @@ type Theme struct {
 
 var darkTheme = Theme{
 	Dark: true,
-	Bg: RGB(11, 11, 14), Surface: RGB(21, 21, 26), Input: RGB(30, 30, 37), Border: RGB(46, 46, 56),
+	Bg:   RGB(11, 11, 14), Surface: RGB(21, 21, 26), Input: RGB(30, 30, 37), Border: RGB(46, 46, 56),
 	Text: RGB(236, 236, 241), Muted: RGB(140, 140, 152),
 	Accent: RGB(200, 20, 90), AccentDim: RGB(120, 12, 55), AccentSoft: RGB(255, 170, 200),
 	Danger: RGB(235, 80, 80), DangerFill: RGB(70, 20, 26), Ok: RGB(70, 205, 125), Warn: RGB(240, 190, 80),
@@ -129,7 +129,7 @@ var darkTheme = Theme{
 }
 var lightTheme = Theme{
 	Dark: false,
-	Bg: RGB(241, 241, 244), Surface: RGB(255, 255, 255), Input: RGB(248, 248, 250), Border: RGB(212, 212, 220),
+	Bg:   RGB(241, 241, 244), Surface: RGB(255, 255, 255), Input: RGB(248, 248, 250), Border: RGB(212, 212, 220),
 	Text: RGB(22, 22, 28), Muted: RGB(105, 105, 118),
 	Accent: RGB(200, 20, 90), AccentDim: RGB(150, 14, 66), AccentSoft: RGB(200, 20, 90),
 	Danger: RGB(200, 30, 30), DangerFill: RGB(253, 233, 233), Ok: RGB(0, 135, 65), Warn: RGB(185, 115, 0),

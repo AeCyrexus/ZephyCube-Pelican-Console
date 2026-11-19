@@ -156,8 +156,8 @@ func newFake(t *testing.T) (*fake, *httptest.Server) {
 				continue
 			}
 			var m struct {
-				Event string   `json:"event"`
-				Args  []any    `json:"args"`
+				Event string `json:"event"`
+				Args  []any  `json:"args"`
 			}
 			json.Unmarshal(p, &m)
 			switch m.Event {
@@ -241,7 +241,7 @@ func TestConsole(t *testing.T) {
 	connected := make(chan bool, 4)
 	done := make(chan struct{})
 	con := c.OpenConsole("abc12345", ConsoleHandlers{
-		OnLine: func(l string, k LineKind) { mu.Lock(); lines = append(lines, l); mu.Unlock() },
+		OnLine:   func(l string, k LineKind) { mu.Lock(); lines = append(lines, l); mu.Unlock() },
 		OnStatus: func(st string) { mu.Lock(); status = st; mu.Unlock() },
 		OnStats:  func(st Stats) { mu.Lock(); stats = st; mu.Unlock() },
 		OnConn:   func(ok bool, err error) { connected <- ok },

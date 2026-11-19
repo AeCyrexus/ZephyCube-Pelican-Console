@@ -30,7 +30,7 @@ type ConsoleHandlers struct {
 	OnLine   func(line string, kind LineKind) // console / daemon / install output, ANSI stripped
 	OnStatus func(state string)               // running, offline, starting, stopping
 	OnStats  func(Stats)
-	OnConn   func(connected bool, err error) // connection state changes
+	OnConn   func(connected bool, err error)   // connection state changes
 	OnEvent  func(event string, args []string) // anything else (backup completed, etc.)
 }
 
@@ -44,14 +44,14 @@ const (
 )
 
 type Console struct {
-	c       *Client
-	id      string
-	h       ConsoleHandlers
-	ctx     context.Context
-	cancel  context.CancelFunc
-	mu      sync.Mutex
-	conn    *wsConn
-	done    chan struct{}
+	c      *Client
+	id     string
+	h      ConsoleHandlers
+	ctx    context.Context
+	cancel context.CancelFunc
+	mu     sync.Mutex
+	conn   *wsConn
+	done   chan struct{}
 }
 
 // OpenConsole connects to the server console and keeps reconnecting until Close.

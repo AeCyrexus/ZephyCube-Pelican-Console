@@ -18,17 +18,18 @@ type QuickCmd struct {
 }
 
 type Config struct {
-	PanelURL      string     `json:"panel_url"`
-	APIKeyDPAPI   string     `json:"api_key_dpapi"` // encrypted with Windows DPAPI (current user)
-	IGN           string     `json:"ign"`
-	AdminAll      bool       `json:"admin_all"`
-	LastServer    string     `json:"last_server"`
-	LightMode     bool       `json:"light_mode"`
-	ListHidden    bool       `json:"list_hidden"`
-	HiddenServers []string   `json:"hidden_servers"`
+	PanelURL      string            `json:"panel_url"`
+	APIKeyDPAPI   string            `json:"api_key_dpapi"` // encrypted with Windows DPAPI (current user)
+	IGN           string            `json:"ign"`
+	AdminAll      bool              `json:"admin_all"`
+	LastServer    string            `json:"last_server"`
+	LightMode     bool              `json:"light_mode"`
+	ListHidden    bool              `json:"list_hidden"`
+	HiddenServers []string          `json:"hidden_servers"`
 	Edition       map[string]string `json:"edition,omitempty"` // server id → java|bedrock (manual override)
-	QuickVersion  int        `json:"quick_version"`
-	QuickCommands []QuickCmd `json:"quick_commands"`
+	QuickVersion  int               `json:"quick_version"`
+	NoUpdateCheck bool              `json:"no_update_check"`
+	QuickCommands []QuickCmd        `json:"quick_commands"`
 	apiKey        string
 }
 
@@ -116,10 +117,10 @@ func (c *Config) Save() error {
 // ---- DPAPI ----
 
 var (
-	crypt32              = syscall.NewLazyDLL("crypt32.dll")
-	pCryptProtectData    = crypt32.NewProc("CryptProtectData")
-	pCryptUnprotectData  = crypt32.NewProc("CryptUnprotectData")
-	pLocalFree           = kernel32.NewProc("LocalFree")
+	crypt32             = syscall.NewLazyDLL("crypt32.dll")
+	pCryptProtectData   = crypt32.NewProc("CryptProtectData")
+	pCryptUnprotectData = crypt32.NewProc("CryptUnprotectData")
+	pLocalFree          = kernel32.NewProc("LocalFree")
 )
 
 type dataBlob struct {
