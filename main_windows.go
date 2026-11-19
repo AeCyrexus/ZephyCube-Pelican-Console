@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"encoding/json"
 	"fmt"
 	"runtime"
@@ -18,13 +17,10 @@ import (
 	"zephycube/pelicanconsole/pelican"
 )
 
-//go:embed icon.png
-var iconPNG []byte
-
+const appVersion = "1.1.0"
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
 
-// control IDs
 const (
 	idList = 200 + iota
 	idRefresh
@@ -39,43 +35,54 @@ const (
 	idCmd
 	idSend
 	idPlayer
-	idPlayers
+	idPlayersList
+	idPlayersRefresh
 	idMode
 	idGamemode
-	idTpMe
-	idBring
+	idTP
+	idSummon
 	idQuickEdit
+	idTheme
+	idSettings
+	idHelp
 
-	idMenuSettings = 100
-	idMenuExit     = 101
-	idMenuQuick    = 102
-	idMenuRefresh  = 103
-	idMenuHelp     = 104
-	idQuickBase    = 1000
+	idQuickBase = 1000
 )
 
-var (
-	uiFont, boldFont, headFont, monoFont uintptr
-	btnFaceBrush                        uintptr
-)
+var uiFont, boldFont, headFont, titleFont, capFont, monoFont uintptr
+
+type cardDef struct {
+	r       RECT
+	caption func() string
+}
 
 type App struct {
 	cfg    *Config
 	client *pelican.Client
 	w      *Win
+	logo   uintptr
 
-	// controls
-	lv, bRefresh, bConnect                          uintptr
+	// header
+	bTheme, bSettings, bHelp uintptr
+	// left
+	lv, bRefresh, bConnect   uintptr
+	lbPlayers, bPlayersRefresh uintptr
+	// right
 	lName, lState, lStats                           uintptr
 	bStart, bStop, bRestart, bKill, bBackup, bClear uintptr
-	chkAuto                                         uintptr
+	tAuto                                           uintptr
 	console                                         uintptr
 	eCmd, bSend, lFeedback                          uintptr
-	lPlayersHdr, lPlayer, cbPlayer, bPlayers        uintptr
-	lMode, cbMode, bGamemode, bTpMe, bBring         uintptr
-	lQuickHdr, bQuickEdit, lQuickEmpty, sep1, sep2  uintptr
-	status                                          uintptr
+	lPlayer, cbPlayer                               uintptr
+	lMode, cbMode, bGamemode                        uintptr
+	lTele, bTP, bSummon                             uintptr
+	bQuickEdit, lQuickEmpty                         uintptr
+	lConn, lCount, lHost                            uintptr
 	quickBtns                                       []uintptr
+
+	cards  []cardDef
+	groups []RECT
+	playersCard RECT
 
 	servers []pelican.Server
 	states  map[string]string
@@ -86,23 +93,24 @@ type App struct {
 	connected bool
 	curState  string
 
-	feedbackColor uint32
-	stateColor    uint32
+	fbKind int
+	players []string
+
+	killVisible bool
+	stopGen     int
 
 	history []string
 	histIdx int
 
-	// command result capture
 	capGen    int
 	capActive bool
 	capLabel  string
 	capLines  []string
 
-	// player list parsing
 	plParser *pelican.PlayerListParser
+	plSilent bool
 	plGen    int
 
-	// pending console lines from the websocket goroutine
 	pendMu    sync.Mutex
 	pending   []pendLine
 	pendSched bool
@@ -114,36 +122,44 @@ type pendLine struct {
 	kind pelican.LineKind
 }
 
+const (
+	fbNone = iota
+	fbOK
+	fbErr
+	fbInfo
+	fbBusy
+	fbWarn
+)
+
 var modes = []string{"survival", "creative", "adventure", "spectator"}
 
 func init() { runtime.LockOSThread() }
 
 func main() {
-	a := &App{cfg: loadConfig(), states: map[string]string{}, feedbackColor: RGB(90, 90, 90), stateColor: RGB(90, 90, 90)}
-	enableVisualStyles()
+	a := &App{cfg: loadConfig(), states: map[string]string{}}
 	initDPI()
+	initDarkModeAPI()
 	initCommonControls()
 	r, _, _ := pGetModuleHandleW.Call(0)
 	hInstance = r
-	r, _, _ = pGetSysColorBrush.Call(COLOR_BTNFACE)
-	btnFaceBrush = r
+	setTheme(!a.cfg.LightMode)
 
 	uiFont = makeFont("Segoe UI", 9, FW_NORMAL)
-	boldFont = makeFont("Segoe UI", 9, FW_BOLD)
-	headFont = makeFont("Segoe UI Semibold", 12, FW_BOLD)
+	boldFont = makeFont("Segoe UI Semibold", 9, FW_BOLD)
+	headFont = makeFont("Segoe UI Semibold", 14, FW_BOLD)
+	titleFont = makeFont("Segoe UI Semibold", 12, FW_BOLD)
+	capFont = makeFont("Segoe UI Semibold", 8, FW_BOLD)
 	monoFont = makeFont("Consolas", 10, FW_NORMAL)
 
-	icon := loadPNGIcon(iconPNG, 32)
-	registerClass(mainClass, btnFaceBrush, icon)
-	registerClass(dlgClass, btnFaceBrush, icon)
+	cx, _, _ := pGetSystemMetrics.Call(11)  // SM_CXICON
+	csx, _, _ := pGetSystemMetrics.Call(49) // SM_CXSMICON
+	big, small := loadAppIcon(int(cx)), loadAppIcon(int(csx))
+	registerClass(mainClass, big, small)
+	registerClass(dlgClass, big, small)
+	a.logo = loadAppIcon(S(34))
 
 	a.build()
-	if icon != 0 {
-		SendMessage(a.w.Hwnd, WM_SETICON, 1, icon)
-		if small := loadPNGIcon(iconPNG, 16); small != 0 {
-			SendMessage(a.w.Hwnd, WM_SETICON, 0, small)
-		}
-	}
+	a.w.ApplyTheme()
 	Show(a.w.Hwnd, SW_SHOW)
 	pUpdateWindow.Call(a.w.Hwnd)
 
@@ -164,10 +180,8 @@ func (a *App) loop() {
 		if int32(r) <= 0 {
 			return
 		}
-		if m.Message == WM_KEYDOWN {
-			if a.handleKey(m.Hwnd, m.WParam) {
-				continue
-			}
+		if m.Message == WM_KEYDOWN && a.handleKey(m.Hwnd, m.WParam) {
+			continue
 		}
 		if d, _, _ := pIsDialogMessageW.Call(a.w.Hwnd, uintptr(unsafe.Pointer(&m))); d != 0 {
 			continue
@@ -228,59 +242,61 @@ func (a *App) setCmdText(s string) {
 	n := uintptr(len(utf16.Encode([]rune(s))))
 	SendMessage(a.eCmd, EM_SETSEL, n, n)
 }
+
 // ---------------- UI construction ----------------
 
+func surf(hs ...uintptr) {
+	for _, h := range hs {
+		onSurface[h] = true
+	}
+}
+
 func (a *App) build() {
-	a.w = &Win{font: uiFont, MinW: S(1000), MinH: S(640)}
-	NewTopWindow(a.w, mainClass, appTitle, WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN, WS_EX_CONTROLPARENT, S(1280), S(820), 0)
+	a.w = &Win{font: uiFont, MinW: S(1060), MinH: S(700)}
+	NewTopWindow(a.w, mainClass, appTitle, WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN, WS_EX_CONTROLPARENT, S(1320), S(860), 0)
 	mainHwnd = a.w.Hwnd
 	w := a.w
 
-	// menu
-	menu, _, _ := pCreateMenu.Call()
-	file, _, _ := pCreatePopupMenu.Call()
-	appendMenu(file, MF_STRING, idMenuSettings, "&Settings…")
-	appendMenu(file, MF_STRING, idMenuRefresh, "&Refresh servers\tF5")
-	appendMenu(file, MF_SEPARATOR, 0, "")
-	appendMenu(file, MF_STRING, idMenuExit, "E&xit")
-	appendMenu(menu, MF_POPUP, file, "&File")
-	quick, _, _ := pCreatePopupMenu.Call()
-	appendMenu(quick, MF_STRING, idMenuQuick, "&Manage quick commands…")
-	appendMenu(menu, MF_POPUP, quick, "&Quick Commands")
-	help, _, _ := pCreatePopupMenu.Call()
-	appendMenu(help, MF_STRING, idMenuHelp, "&Shortcuts && placeholders")
-	appendMenu(menu, MF_POPUP, help, "&Help")
-	pSetMenu.Call(w.Hwnd, menu)
+	// header
+	a.bTheme = w.Toggle("Dark mode", idTheme, !a.cfg.LightMode)
+	a.bSettings = w.Btn("Settings", idSettings, kNormal)
+	a.bHelp = w.Btn("Help", idHelp, kNormal)
 
-	// left: servers
-	a.lv = w.Ctl("SysListView32", "", WS_TABSTOP|LVS_REPORT|LVS_SINGLESEL|LVS_SHOWSELALWAYS|LVS_NOSORTHEADER, WS_EX_CLIENTEDGE, idList)
+	// servers card
+	a.lv = w.Ctl("SysListView32", "", WS_TABSTOP|LVS_REPORT|LVS_SINGLESEL|LVS_SHOWSELALWAYS|LVS_NOSORTHEADER|LVS_NOCOLUMNHEADER, 0, idList, roleListView)
 	SendMessage(a.lv, LVM_SETEXTENDEDLISTVIEWSTYLE, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER)
-	setExplorerTheme(a.lv)
 	lvAddColumn(a.lv, 0, "Server", S(150))
-	lvAddColumn(a.lv, 1, "State", S(64))
+	lvAddColumn(a.lv, 1, "State", S(70))
 	lvAddColumn(a.lv, 2, "Node", S(60))
-	a.bRefresh = w.Button("Refresh  (F5)", idRefresh)
-	a.bConnect = w.Button("Connect", idConnect)
-	SetFont(a.bConnect, boldFont)
+	a.bRefresh = w.Btn("Refresh", idRefresh, kNormal)
+	a.bConnect = w.Btn("Connect", idConnect, kPrimary)
+	surf(a.bRefresh, a.bConnect)
 
-	// right: header
+	// players card
+	a.lbPlayers = w.Ctl("LISTBOX", "", WS_TABSTOP|WS_VSCROLL|LBS_NOTIFY|LBS_NOINTEGRALHEIGHT, 0, idPlayersList, roleListBox)
+	a.bPlayersRefresh = w.Btn("↻", idPlayersRefresh, kNormal)
+	surf(a.bPlayersRefresh)
+
+	// server header card
 	a.lName = w.Label("No server connected", SS_ENDELLIPSIS)
-	SetFont(a.lName, headFont)
+	w.SetCtlFont(a.lName, headFont)
 	a.lState = w.Label("", 0)
-	SetFont(a.lState, boldFont)
+	w.SetCtlFont(a.lState, boldFont)
+	labelColor[a.lState] = a.stateColor
 	a.lStats = w.Label("", SS_RIGHT|SS_ENDELLIPSIS)
+	Muted(a.lStats)
+	a.bStart = w.Btn("▶  Start", idStart, kNormal)
+	a.bStop = w.Btn("■  Stop", idStop, kNormal)
+	a.bRestart = w.Btn("↻  Restart", idRestart, kNormal)
+	a.bKill = w.Btn("✖  Kill", idKill, kDanger)
+	Show(a.bKill, 0)
+	a.bBackup = w.Btn("Create backup…", idBackup, kNormal)
+	a.bClear = w.Btn("Clear", idClear, kNormal)
+	a.tAuto = w.Toggle("Auto-scroll", idAutoScroll, true)
+	surf(a.lName, a.lState, a.lStats, a.bStart, a.bStop, a.bRestart, a.bKill, a.bBackup, a.bClear, a.tAuto)
 
-	a.bStart = w.Button("▶  Start", idStart)
-	a.bStop = w.Button("■  Stop", idStop)
-	a.bRestart = w.Button("⟳  Restart", idRestart)
-	a.bKill = w.Button("✖  Kill", idKill)
-	a.bBackup = w.Button("Create backup…", idBackup)
-	a.bClear = w.Button("Clear", idClear)
-	a.chkAuto = w.Ctl("BUTTON", "Auto-scroll", WS_TABSTOP|BS_AUTOCHECKBOX, 0, idAutoScroll)
-	SetChecked(a.chkAuto, true)
-
-	// console (RichEdit 4.1)
-	a.console = w.Ctl("RICHEDIT50W", "", WS_TABSTOP|WS_VSCROLL|ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL, WS_EX_CLIENTEDGE, 0)
+	// console
+	a.console = w.Ctl("RICHEDIT50W", "", WS_TABSTOP|WS_VSCROLL|ES_MULTILINE|ES_READONLY|ES_AUTOVSCROLL, WS_EX_CLIENTEDGE, 0, roleRich)
 	SendMessage(a.console, EM_EXLIMITTEXT, 0, 64<<20)
 	SendMessage(a.console, EM_SETBKGNDCOLOR, 0, uintptr(colBg))
 	a.setDefaultCharFormat()
@@ -288,36 +304,45 @@ func (a *App) build() {
 	a.eCmd = w.Edit("", 0, idCmd)
 	SetFont(a.eCmd, monoFont)
 	SetCue(a.eCmd, "Type a console command and press Enter  (↑/↓ history, no leading slash)")
-	a.bSend = w.Ctl("BUTTON", "Send", WS_TABSTOP|BS_PUSHBUTTON, 0, idSend)
+	a.bSend = w.Btn("Send", idSend, kPrimary)
 	a.lFeedback = w.Label("", SS_ENDELLIPSIS)
-	SetFont(a.lFeedback, boldFont)
+	w.SetCtlFont(a.lFeedback, boldFont)
+	labelColor[a.lFeedback] = a.feedbackColor
 
-	a.sep1 = w.Ctl("STATIC", "", SS_ETCHEDHORZ, 0, 0)
-	a.lPlayersHdr = w.Label("Player actions", 0)
-	SetFont(a.lPlayersHdr, boldFont)
-	a.lPlayer = w.Label("Player:", SS_RIGHT)
-	a.cbPlayer = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL, 0, idPlayer)
-	a.bPlayers = w.Button("Online ↻", idPlayers)
-	a.lMode = w.Label("Mode:", SS_RIGHT)
-	a.cbMode = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idMode)
+	// player actions card
+	a.lPlayer = w.Label("Player", 0)
+	a.cbPlayer = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL, 0, idPlayer, roleCombo)
+	a.lMode = w.Label("Gamemode", 0)
+	a.cbMode = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idMode, roleCombo)
 	comboSet(a.cbMode, modes)
 	SendMessage(a.cbMode, CB_SETCURSEL, 1, 0)
-	a.bGamemode = w.Button("Set gamemode", idGamemode)
-	a.bTpMe = w.Button("TP me → player", idTpMe)
-	a.bBring = w.Button("Summon player → me", idBring)
+	a.bGamemode = w.Btn("Set", idGamemode, kSegment)
+	a.lTele = w.Label("Teleport", 0)
+	a.bTP = w.Btn("TP", idTP, kSegment)
+	a.bSummon = w.Btn("Summon", idSummon, kSegment)
+	Muted(a.lPlayer)
+	Muted(a.lMode)
+	Muted(a.lTele)
+	surf(a.lPlayer, a.lMode, a.bGamemode, a.lTele, a.bTP, a.bSummon)
 
-	a.sep2 = w.Ctl("STATIC", "", SS_ETCHEDHORZ, 0, 0)
-	a.lQuickHdr = w.Label("Quick commands", 0)
-	SetFont(a.lQuickHdr, boldFont)
-	a.bQuickEdit = w.Button("Edit buttons…", idQuickEdit)
+	// quick card
+	a.bQuickEdit = w.Btn("Edit buttons…", idQuickEdit, kNormal)
 	a.lQuickEmpty = w.Label("No quick commands — click “Edit buttons…” to add some.", 0)
+	Muted(a.lQuickEmpty)
+	surf(a.bQuickEdit, a.lQuickEmpty)
 
-	a.status = w.Ctl("msctls_statusbar32", "", SBARS_SIZEGRIP, 0, 0)
+	// status row
+	a.lConn = w.Label("○ Disconnected", 0)
+	a.lCount = w.Label("", 0)
+	a.lHost = w.Label("v"+appVersion, SS_RIGHT)
+	for _, h := range []uintptr{a.lConn, a.lCount, a.lHost} {
+		Muted(h)
+	}
 
 	w.OnSize = func(cw, ch int) { a.layout(cw, ch) }
 	w.OnCommand = a.onCommand
 	w.OnNotify = a.onNotify
-	w.OnColor = a.onColor
+	w.OnPaint = a.paint
 	w.OnClose = func() {
 		if a.con != nil {
 			a.con.Close()
@@ -328,23 +353,19 @@ func (a *App) build() {
 
 	a.rebuildQuick()
 	a.updateButtons()
-	a.setStatus(0, "Disconnected")
 }
 
-func appendMenu(menu uintptr, flags uint32, id uintptr, text string) {
-	t := u16(text)
-	pAppendMenuW.Call(menu, uintptr(flags), id, uintptr(unsafe.Pointer(t)))
-}
-
+// console palette (always dark, terminal style)
 var (
 	colBg      = RGB(10, 10, 12)
-	colText    = RGB(222, 222, 222)
+	colText    = RGB(222, 222, 226)
 	colError   = RGB(255, 99, 99)
 	colWarn    = RGB(240, 196, 80)
 	colDaemon  = RGB(110, 180, 255)
 	colInstall = RGB(150, 150, 160)
 	colEcho    = RGB(255, 170, 200)
 	colInfo    = RGB(232, 70, 130)
+	colJoin    = RGB(90, 210, 140)
 )
 
 func (a *App) setDefaultCharFormat() {
@@ -355,158 +376,262 @@ func (a *App) setDefaultCharFormat() {
 	SendMessage(a.console, EM_SETCHARFORMAT, 0, uintptr(unsafe.Pointer(&cf)))
 }
 
-type flowItem struct {
-	h uintptr
-	w int
+// ---------------- theme ----------------
+
+func (a *App) setDark(dark, save bool) {
+	setTheme(dark)
+	SetOn(a.bTheme, dark)
+	a.w.ApplyTheme()
+	if save {
+		a.cfg.LightMode = !dark
+		_ = a.cfg.Save()
+	}
 }
 
-// flow lays out items left-to-right, wrapping; returns height used.
-func flow(items []flowItem, x, y, width, rowH, gap int, apply bool) int {
+func (a *App) stateColor() uint32 {
+	switch a.curState {
+	case "running":
+		return th.Ok
+	case "offline":
+		return th.Danger
+	case "starting", "stopping":
+		return th.Warn
+	}
+	return th.Muted
+}
+
+func (a *App) feedbackColor() uint32 {
+	switch a.fbKind {
+	case fbOK:
+		return th.Ok
+	case fbErr:
+		return th.Danger
+	case fbBusy:
+		return th.AccentSoft
+	case fbWarn:
+		return th.Warn
+	}
+	return th.Muted
+}
+
+func (a *App) feedback(s string, kind int) {
+	a.fbKind = kind
+	SetText(a.lFeedback, s)
+	pInvalidateRect.Call(a.lFeedback, 0, 1)
+}
+
+// ---------------- layout & paint ----------------
+
+type layoutItem struct {
+	h     uintptr
+	w     int
+	combo bool
+}
+type block struct {
+	items    []layoutItem
+	outlined bool
+}
+
+func blockWidth(b block, gi, op int) int {
+	w := 0
+	for i, it := range b.items {
+		if i > 0 {
+			w += gi
+		}
+		w += it.w
+	}
+	if b.outlined {
+		w += 2 * op
+	}
+	return w
+}
+
+// flowBlocks lays out blocks left-to-right with wrapping; returns height and outline rects.
+func flowBlocks(blocks []block, x, y, width, bh, gap, gi, op int, apply bool) (int, []RECT) {
+	rowH := bh + 2*op
 	cx, cy := x, y
-	for _, it := range items {
-		if cx > x && cx+it.w > x+width {
+	var outs []RECT
+	for _, b := range blocks {
+		bw := blockWidth(b, gi, op)
+		if cx > x && cx+bw > x+width {
 			cx = x
 			cy += rowH + gap
 		}
 		if apply {
-			Move(it.h, cx, cy, it.w, rowH)
+			ix := cx
+			if b.outlined {
+				outs = append(outs, RECT{int32(cx), int32(cy), int32(cx + bw), int32(cy + rowH)})
+				ix += op
+			}
+			for i, it := range b.items {
+				if i > 0 {
+					ix += gi
+				}
+				if it.combo {
+					Move(it.h, ix, cy+op+S(3), it.w, S(320))
+				} else {
+					Move(it.h, ix, cy+op, it.w, bh)
+				}
+				ix += it.w
+			}
 		}
-		cx += it.w + gap
+		cx += bw + gap
 	}
-	return cy + rowH - y
+	return cy + rowH - y, outs
 }
 
 func (a *App) layout(cw, ch int) {
 	if cw == 0 || ch == 0 {
 		return
 	}
-	SendMessage(a.status, WM_SIZE, 0, 0)
-	sr := WindowRect(a.status)
-	sbH := int(sr.Bottom - sr.Top)
-	parts := []int32{int32(S(260)), int32(cw - S(170)), -1}
-	SendMessage(a.status, SB_SETPARTS, 3, uintptr(unsafe.Pointer(&parts[0])))
+	m, g, bh, pad, capH := S(14), S(8), S(30), S(12), S(34)
+	topH := S(58)
+	statusH := S(26)
+	bottom := ch - statusH
+	a.cards = a.cards[:0]
+	a.groups = a.groups[:0]
 
-	m := S(10)
-	g := S(6)
-	bh := S(28)
-	bottom := ch - sbH - m
+	// header buttons (right)
+	x := cw - m
+	for _, it := range []struct {
+		h uintptr
+		w int
+	}{{a.bHelp, S(70)}, {a.bSettings, S(96)}, {a.bTheme, S(118)}} {
+		x -= it.w
+		Move(it.h, x, (topH-bh)/2, it.w, bh)
+		x -= g
+	}
 
-	// left column
-	lw := S(290)
-	Move(a.lv, m, m, lw, bottom-m-bh-g)
-	half := (lw - g) / 2
-	Move(a.bRefresh, m, bottom-bh, half, bh)
-	Move(a.bConnect, m+half+g, bottom-bh, lw-half-g, bh)
-	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(lw-S(64)-S(64)-S(24)))
-	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(64)))
+	// status row
+	Move(a.lConn, m, bottom, S(420), statusH)
+	Move(a.lCount, m+S(430), bottom, S(200), statusH)
+	Move(a.lHost, cw-m-S(420), bottom, S(420), statusH)
+
+	// ---- left column ----
+	lw := S(300)
+	playersH := S(240)
+	sc := RECT{int32(m), int32(topH), int32(m + lw), int32(bottom - g - playersH)}
+	a.cards = append(a.cards, cardDef{sc, func() string { return "SERVERS" }})
+	in := int(sc.Left) + pad
+	iw := lw - 2*pad
+	btnY := int(sc.Bottom) - pad - bh
+	Move(a.lv, in, int(sc.Top)+capH, iw, btnY-g-(int(sc.Top)+capH))
+	half := (iw - g) / 2
+	Move(a.bRefresh, in, btnY, half, bh)
+	Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
+	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(78)-S(64)-S(6)))
+	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(78)))
 	SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(64)))
 
-	// right column
-	rx := m + lw + S(12)
-	rw := cw - rx - m
-	y := m
-	Move(a.lName, rx, y, rw*45/100, S(28))
-	Move(a.lState, rx+rw*45/100+g, y, S(110), S(28))
-	Move(a.lStats, rx+rw*45/100+g+S(110), y, rw-(rw*45/100+g+S(110)), S(28))
-	y += S(32)
-	x := rx
-	for _, b := range []uintptr{a.bStart, a.bStop, a.bRestart, a.bKill} {
-		Move(b, x, y, S(88), bh)
-		x += S(88) + g
-	}
-	Move(a.bBackup, x+S(10), y, S(130), bh)
-	Move(a.chkAuto, rx+rw-S(96), y, S(96), bh)
-	Move(a.bClear, rx+rw-S(96)-g-S(70), y, S(70), bh)
-	consoleTop := y + bh + g
+	pc := RECT{int32(m), sc.Bottom + int32(g), int32(m + lw), int32(bottom)}
+	a.playersCard = pc
+	a.cards = append(a.cards, cardDef{pc, func() string {
+		if a.cur == nil {
+			return "ONLINE PLAYERS"
+		}
+		return fmt.Sprintf("ONLINE PLAYERS · %d", len(a.players))
+	}})
+	Move(a.bPlayersRefresh, int(pc.Right)-pad-S(36), int(pc.Top)+S(6), S(36), S(26))
+	Move(a.lbPlayers, in, int(pc.Top)+capH, iw, int(pc.Bottom)-pad-(int(pc.Top)+capH))
 
-	// bottom-up: quick buttons
-	qItems := make([]flowItem, len(a.quickBtns))
+	// ---- right column ----
+	rx := m + lw + S(14)
+	rw := cw - rx - m
+	irx, irw := rx+pad, rw-2*pad
+
+	hc := RECT{int32(rx), int32(topH), int32(rx + rw), int32(topH + S(108))}
+	a.cards = append(a.cards, cardDef{hc, nil})
+	ty := int(hc.Top) + S(10)
+	nameW := irw * 45 / 100
+	Move(a.lName, irx, ty, nameW, S(36))
+	Move(a.lState, irx+nameW+g, ty, S(130), S(36))
+	Move(a.lStats, irx+nameW+g+S(130), ty, irw-nameW-g-S(130), S(36))
+	by := int(hc.Bottom) - pad - bh
+	x = irx
+	for _, b := range []uintptr{a.bStart, a.bStop, a.bRestart, a.bKill} {
+		Move(b, x, by, S(96), bh)
+		x += S(96) + g
+	}
+	Move(a.bBackup, x+S(10), by, S(140), bh)
+	Move(a.tAuto, irx+irw-S(110), by, S(110), bh)
+	Move(a.bClear, irx+irw-S(110)-g-S(72), by, S(72), bh)
+	consoleTop := int(hc.Bottom) + g
+
+	// quick card (bottom)
+	qItems := make([]block, len(a.quickBtns))
 	for i, b := range a.quickBtns {
-		qItems[i] = flowItem{b, S(140)}
+		qItems[i] = block{items: []layoutItem{{b, S(140), false}}}
 	}
 	qh := bh
 	if len(qItems) > 0 {
-		qh = flow(qItems, rx, 0, rw, bh, g, false)
+		qh, _ = flowBlocks(qItems, irx, 0, irw, bh, g, 0, 0, false)
 	}
-	qy := bottom - qh
+	qc := RECT{int32(rx), int32(bottom - (capH + qh + pad)), int32(rx + rw), int32(bottom)}
+	a.cards = append(a.cards, cardDef{qc, func() string { return "QUICK COMMANDS" }})
+	Move(a.bQuickEdit, int(qc.Right)-pad-S(120), int(qc.Top)+S(6), S(120), S(26))
 	if len(qItems) > 0 {
-		flow(qItems, rx, qy, rw, bh, g, true)
+		flowBlocks(qItems, irx, int(qc.Top)+capH, irw, bh, g, 0, 0, true)
 		Show(a.lQuickEmpty, 0)
 	} else {
-		Move(a.lQuickEmpty, rx, qy, rw, bh)
+		Move(a.lQuickEmpty, irx, int(qc.Top)+capH, irw, bh)
 		Show(a.lQuickEmpty, SW_SHOW)
 	}
-	hy := qy - g - S(26)
-	Move(a.lQuickHdr, rx, hy, S(200), S(26))
-	Move(a.bQuickEdit, rx+rw-S(120), hy, S(120), S(26))
-	Move(a.sep2, rx, hy-g, rw, 2)
 
-	// player actions
-	pItems := []flowItem{
-		{a.lPlayer, S(50)}, {a.cbPlayer, S(180)}, {a.bPlayers, S(84)},
-		{a.lMode, S(44)}, {a.cbMode, S(110)}, {a.bGamemode, S(112)},
-		{a.bTpMe, S(126)}, {a.bBring, S(156)},
+	// player actions card
+	gi, op := S(6), S(6)
+	pBlocks := []block{
+		{items: []layoutItem{{a.lPlayer, S(50), false}, {a.cbPlayer, S(210), true}}},
+		{outlined: true, items: []layoutItem{{a.lMode, S(76), false}, {a.cbMode, S(120), true}, {a.bGamemode, S(64), false}}},
+		{outlined: true, items: []layoutItem{{a.lTele, S(68), false}, {a.bTP, S(70), false}, {a.bSummon, S(96), false}}},
 	}
-	ph := flow(pItems, rx, 0, rw, bh, g, false)
-	py := hy - S(10) - ph
-	flow(pItems, rx, py, rw, bh, g, true)
-	a.fixComboHeights(pItems, rx, py, rw, bh, g)
-	Move(a.lPlayersHdr, rx, py-S(26), S(200), S(24))
-	Move(a.sep1, rx, py-S(30), rw, 2)
+	ph, _ := flowBlocks(pBlocks, irx, 0, irw, bh, S(12), gi, op, false)
+	pac := RECT{int32(rx), qc.Top - int32(g) - int32(capH+ph+pad), int32(rx + rw), qc.Top - int32(g)}
+	a.cards = append(a.cards, cardDef{pac, func() string { return "PLAYER ACTIONS" }})
+	_, outs := flowBlocks(pBlocks, irx, int(pac.Top)+capH, irw, bh, S(12), gi, op, true)
+	a.groups = append(a.groups, outs...)
 
-	// command row + feedback
-	fy := py - S(36) - S(24)
-	Move(a.lFeedback, rx, fy, rw, S(24))
-	cy := fy - g - S(28)
-	Move(a.eCmd, rx, cy, rw-S(90)-g, S(28))
-	Move(a.bSend, rx+rw-S(90), cy, S(90), S(28))
+	// feedback + command row
+	fy := int(pac.Top) - g - S(24)
+	Move(a.lFeedback, rx+S(4), fy, rw-S(4), S(24))
+	cy := fy - S(4) - S(32)
+	Move(a.eCmd, rx, cy, rw-S(96)-g, S(32))
+	Move(a.bSend, rx+rw-S(96), cy, S(96), S(32))
 	Move(a.console, rx, consoleTop, rw, cy-g-consoleTop)
+
+	pInvalidateRect.Call(a.w.Hwnd, 0, 0)
 }
 
-// Combo boxes need a tall window height for their drop-down list; re-move them with it.
-func (a *App) fixComboHeights(items []flowItem, x, y, width, rowH, gap int) {
-	cx, cy := x, y
-	for _, it := range items {
-		if cx > x && cx+it.w > x+width {
-			cx = x
-			cy += rowH + gap
+func (a *App) paint(hdc uintptr, cw, ch int) {
+	m := S(14)
+	topH := S(58)
+	ls := S(34)
+	if a.logo != 0 {
+		drawIcon(hdc, a.logo, m, (topH-ls)/2, ls)
+	}
+	tx := int32(m + ls + S(12))
+	drawText(hdc, "ZephyCube", RECT{tx, int32(S(9)), tx + int32(S(400)), int32(S(31))}, th.Text, titleFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE)
+	sub := "Pelican Console"
+	if a.cfg.PanelURL != "" {
+		sub += "  ·  " + strings.TrimPrefix(strings.TrimPrefix(a.cfg.PanelURL, "https://"), "http://")
+	}
+	drawText(hdc, sub, RECT{tx, int32(S(30)), tx + int32(S(600)), int32(S(50))}, th.Muted, uiFont, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS)
+	for _, c := range a.cards {
+		cap := ""
+		if c.caption != nil {
+			cap = c.caption()
 		}
-		if it.h == a.cbPlayer || it.h == a.cbMode {
-			Move(it.h, cx, cy+S(2), it.w, S(260))
-		}
-		cx += it.w + gap
+		card(hdc, c.r, cap)
+	}
+	for _, g := range a.groups {
+		outline(hdc, g)
 	}
 }
 
-func (a *App) setStatus(part int, s string) { SendMessageStr(a.status, SB_SETTEXTW, uintptr(part), s) }
-
-func (a *App) onColor(hdc, ctl uintptr) uintptr {
-	var c uint32
-	switch ctl {
-	case a.lFeedback:
-		c = a.feedbackColor
-	case a.lState:
-		c = a.stateColor
-	default:
-		return 0
-	}
-	pSetTextColor.Call(hdc, uintptr(c))
-	pSetBkMode.Call(hdc, TRANSPARENT)
-	return btnFaceBrush
+func (a *App) invalidatePlayersCaption() {
+	r := a.playersCard
+	r.Bottom = r.Top + int32(S(34))
+	pInvalidateRect.Call(a.w.Hwnd, uintptr(unsafe.Pointer(&r)), 0)
 }
-
-func (a *App) feedback(s string, c uint32) {
-	a.feedbackColor = c
-	SetText(a.lFeedback, s)
-	pInvalidateRect.Call(a.lFeedback, 0, 1)
-}
-
-var (
-	fbOK   = RGB(0, 128, 40)
-	fbErr  = RGB(200, 0, 0)
-	fbInfo = RGB(80, 80, 90)
-	fbBusy = RGB(0, 90, 170)
-)
 
 // ---------------- events ----------------
 
@@ -517,30 +642,41 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 		}
 		return
 	}
-	if code != 0 && ctl != 0 { // only button clicks / menu items
+	if id == idPlayersList {
+		if code == LBN_SELCHANGE || code == LBN_DBLCLK {
+			if i := lbSel(a.lbPlayers); i >= 0 && i < len(a.players) {
+				SetText(a.cbPlayer, a.players[i])
+			}
+		}
+		return
+	}
+	if code != 0 && ctl != 0 {
 		return
 	}
 	switch id {
-	case idMenuSettings:
+	case idTheme:
+		a.setDark(IsOn(a.bTheme), true)
+	case idSettings:
 		a.openSettings()
-	case idMenuExit:
-		PostMessage(a.w.Hwnd, WM_CLOSE, 0, 0)
-	case idMenuQuick, idQuickEdit:
+	case idQuickEdit:
 		a.manageQuick()
-	case idMenuRefresh, idRefresh:
+	case idRefresh:
 		a.refreshServers()
-	case idMenuHelp:
+	case idHelp:
 		MsgBox(a.w.Hwnd, "Shortcuts & placeholders",
 			"Double-click / Enter on a server  → connect\r\n"+
 				"F5  → refresh server list\r\n"+
 				"Enter in command box  → send,  ↑/↓  → history,  Ctrl+L → clear console\r\n\r\n"+
+				"TP  = teleport you → player   (tp {me} {player})\r\n"+
+				"Summon  = bring player → you   (tp {player} {me})\r\n"+
+				"Click a name in Online Players to fill the Player box.\r\n\r\n"+
 				"Quick command placeholders:\r\n"+
 				"  {player}  value of the Player box\r\n"+
 				"  {me}  your in-game name (Settings)\r\n"+
 				"  {input}  asks you when clicked\r\n"+
 				"  {server}  connected server name\r\n"+
 				"Multiple lines = multiple commands, sent in order.\r\n\r\n"+
-				"Feedback line: green ✔ = server replied OK, red ✖ = error text found in the reply.", MB_ICONINFORMATION)
+				"Kill only appears if Stop/Restart hasn't finished after 15 s\r\n(or if you press Stop again while it is stopping).", MB_ICONINFORMATION)
 	case idConnect:
 		a.connectSelected()
 	case idStart:
@@ -557,28 +693,73 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 		a.clearConsole()
 	case idSend:
 		a.sendFromInput()
-	case idPlayers:
-		a.refreshPlayers()
+	case idPlayersRefresh:
+		a.refreshPlayers(false)
 	case idGamemode:
-		a.runTemplate("Gamemode", "gamemode "+modes[max(0, comboSel(a.cbMode))]+" {player}")
-	case idTpMe:
-		a.runTemplate("TP me → player", "tp {me} {player}")
-	case idBring:
-		a.runTemplate("Summon player", "tp {player} {me}")
+		m := modes[max(0, comboSel(a.cbMode))]
+		a.runTemplate("Gamemode "+m, "gamemode "+m+" {player}")
+	case idTP:
+		a.runTemplate("TP → {player}", "tp {me} {player}")
+	case idSummon:
+		a.runTemplate("Summon {player}", "tp {player} {me}")
 	}
 }
 
 func (a *App) onNotify(nm *NMHDR) (uintptr, bool) {
-	if nm.HwndFrom == a.lv && int32(nm.Code) == NM_DBLCLK {
+	if nm.HwndFrom != a.lv {
+		return 0, false
+	}
+	switch int32(nm.Code) {
+	case NM_DBLCLK:
 		a.connectSelected()
 		return 0, true
+	case NM_CUSTOMDRAW:
+		cd := (*NMLVCUSTOMDRAW)(unsafe.Pointer(nm))
+		switch cd.Nmcd.DrawStage {
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW, true
+		case CDDS_ITEM | CDDS_PREPAINT:
+			return CDRF_NOTIFYSUBITEMDRAW, true
+		case CDDS_ITEM | CDDS_SUBITEM | CDDS_PREPAINT:
+			row := int(cd.Nmcd.ItemSpec)
+			cd.ClrText = th.Text
+			if row >= 0 && row < len(a.servers) {
+				switch cd.ISubItem {
+				case 1:
+					switch a.states[a.servers[row].Identifier] {
+					case "running":
+						cd.ClrText = th.Ok
+					case "offline":
+						cd.ClrText = th.Danger
+					case "starting", "stopping", "installing":
+						cd.ClrText = th.Warn
+					default:
+						cd.ClrText = th.Muted
+					}
+				case 2:
+					cd.ClrText = th.Muted
+				}
+			}
+			return CDRF_NEWFONT, true
+		}
 	}
 	return 0, false
 }
 
+// updateButtons enables/hides controls from the connection + server state.
 func (a *App) updateButtons() {
 	on := a.cur != nil
-	for _, h := range []uintptr{a.bStart, a.bStop, a.bRestart, a.bKill, a.bBackup, a.bSend, a.bPlayers, a.bGamemode, a.bTpMe, a.bBring} {
+	st := a.curState
+	known := st == "running" || st == "offline" || st == "starting" || st == "stopping"
+	Enable(a.bStart, on && (!known || st == "offline"))
+	Enable(a.bStop, on && (!known || st != "offline"))
+	Enable(a.bRestart, on && (!known || st == "running" || st == "starting"))
+	if on && a.killVisible && st != "offline" {
+		Show(a.bKill, SW_SHOW)
+	} else {
+		Show(a.bKill, 0)
+	}
+	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bGamemode, a.bTP, a.bSummon} {
 		Enable(h, on)
 	}
 	for _, h := range a.quickBtns {
@@ -590,17 +771,18 @@ func (a *App) updateButtons() {
 
 func (a *App) applyConfig() {
 	a.client = pelican.New(a.cfg.PanelURL, a.cfg.apiKey)
-	a.setStatus(2, strings.TrimPrefix(strings.TrimPrefix(a.cfg.PanelURL, "https://"), "http://"))
+	SetOn(a.bTheme, !a.cfg.LightMode)
+	pInvalidateRect.Call(a.w.Hwnd, 0, 0)
 	a.refreshServers()
 }
 
 func (a *App) refreshServers() {
 	if a.client == nil {
-		a.feedback("Set the panel URL and API key in File → Settings.", fbErr)
+		a.feedback("Set the panel URL and API key in Settings.", fbErr)
 		return
 	}
 	c, admin := a.client, a.cfg.AdminAll
-	a.setStatus(1, "Loading servers…")
+	SetText(a.lCount, "Loading servers…")
 	Enable(a.bRefresh, false)
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -639,7 +821,7 @@ func (a *App) refreshServers() {
 		Post(func() {
 			Enable(a.bRefresh, true)
 			if err != nil {
-				a.setStatus(1, "Server list failed")
+				SetText(a.lCount, "Server list failed")
 				a.feedback("✖ Server list: "+err.Error(), fbErr)
 				return
 			}
@@ -653,7 +835,7 @@ func (a *App) refreshServers() {
 				a.states[a.cur.Identifier] = a.curState
 			}
 			a.fillList()
-			a.setStatus(1, fmt.Sprintf("%d servers", len(list)))
+			SetText(a.lCount, fmt.Sprintf("%d servers", len(list)))
 			if a.cur == nil && a.cfg.LastServer != "" {
 				for i, s := range a.servers {
 					if s.Identifier == a.cfg.LastServer {
@@ -726,6 +908,8 @@ func (a *App) connect(s pelican.Server) {
 	a.curState = a.states[s.Identifier]
 	a.capActive = false
 	a.plParser = nil
+	a.killVisible = false
+	a.stopGen++
 	a.cfg.LastServer = s.Identifier
 	_ = a.cfg.Save()
 
@@ -733,12 +917,12 @@ func (a *App) connect(s pelican.Server) {
 	SetText(a.lName, s.Name)
 	SetText(a.lStats, "")
 	a.setState(a.curState)
-	a.setStatus(0, "Connecting to console…")
+	a.setPlayers(nil)
+	SetText(a.lConn, "◌ Connecting to console…")
 	a.appendConsole([]pendLine{{gen, fmt.Sprintf("── Connecting to %s (%s) on %s ──", s.Name, s.Identifier, s.Node), lineInfo}})
-	a.feedback("", fbInfo)
+	a.feedback("", fbNone)
 	a.fillList()
 	a.updateButtons()
-	comboSet(a.cbPlayer, nil)
 
 	a.con = a.client.OpenConsole(s.Identifier, pelican.ConsoleHandlers{
 		OnLine: func(l string, k pelican.LineKind) { a.queueLine(gen, l, k) },
@@ -763,14 +947,22 @@ func (a *App) connect(s pelican.Server) {
 				}
 				a.connected = ok
 				if ok {
-					a.setStatus(0, "● Console connected")
+					SetText(a.lConn, "● Console connected")
+					// sync the online list once the state is known
+					time.AfterFunc(1500*time.Millisecond, func() {
+						Post(func() {
+							if gen == a.gen && a.connected && a.curState == "running" {
+								a.refreshPlayers(true)
+							}
+						})
+					})
 				} else {
-					msg := "Console disconnected — retrying"
+					msg := "○ Console disconnected — retrying"
 					if err != nil {
 						msg += ": " + err.Error()
 						a.appendConsole([]pendLine{{gen, "── " + err.Error() + " — reconnecting… ──", pelican.LineError}})
 					}
-					a.setStatus(0, msg)
+					SetText(a.lConn, msg)
 				}
 			})
 		},
@@ -786,6 +978,7 @@ func (a *App) connect(s pelican.Server) {
 
 const lineInfo pelican.LineKind = 100
 const lineEcho pelican.LineKind = 101
+const lineJoin pelican.LineKind = 102
 
 func (a *App) queueLine(gen int, text string, k pelican.LineKind) {
 	a.pendMu.Lock()
@@ -806,17 +999,32 @@ func (a *App) flushPending() {
 	a.pendMu.Unlock()
 	var cur []pendLine
 	for _, l := range lines {
-		if l.gen == a.gen {
-			cur = append(cur, l)
+		if l.gen != a.gen {
+			continue
 		}
+		if l.kind == pelican.LineConsole {
+			if _, _, ok := pelican.ParseJoinLeave(l.text); ok {
+				l.kind = lineJoin
+			}
+		}
+		cur = append(cur, l)
 	}
 	if len(cur) == 0 {
 		return
 	}
 	a.appendConsole(cur)
 	for _, l := range cur {
-		if l.kind != pelican.LineConsole || strings.TrimSpace(l.text) == "" {
+		if (l.kind != pelican.LineConsole && l.kind != lineJoin) || strings.TrimSpace(l.text) == "" {
 			continue
+		}
+		if l.kind == lineJoin {
+			if name, joined, ok := pelican.ParseJoinLeave(l.text); ok {
+				if joined {
+					a.addPlayer(name)
+				} else {
+					a.removePlayer(name)
+				}
+			}
 		}
 		if a.capActive {
 			a.capLines = append(a.capLines, l.text)
@@ -833,6 +1041,8 @@ func colorFor(l pendLine) uint32 {
 		return colInfo
 	case lineEcho:
 		return colEcho
+	case lineJoin:
+		return colJoin
 	case pelican.LineDaemon:
 		return colDaemon
 	case pelican.LineInstall:
@@ -856,7 +1066,7 @@ func (a *App) textLen() int32 {
 
 func (a *App) appendConsole(lines []pendLine) {
 	h := a.console
-	auto := IsChecked(a.chkAuto)
+	auto := IsOn(a.tAuto)
 	var sel CHARRANGE
 	var scroll POINT
 	SendMessage(h, EM_EXGETSEL, 0, uintptr(unsafe.Pointer(&sel)))
@@ -864,7 +1074,6 @@ func (a *App) appendConsole(lines []pendLine) {
 	SendMessage(h, WM_SETREDRAW, 0, 0)
 	SendMessage(h, EM_HIDESELECTION, 1, 0)
 
-	// group consecutive lines with the same colour
 	i := 0
 	for i < len(lines) {
 		c := colorFor(lines[i])
@@ -885,7 +1094,6 @@ func (a *App) appendConsole(lines []pendLine) {
 		i = j
 	}
 
-	// trim to keep the control fast
 	if n := int(SendMessage(h, EM_GETLINECOUNT, 0, 0)); n > 6000 {
 		cut := int32(SendMessage(h, EM_LINEINDEX, uintptr(n-4000), 0))
 		cr := CHARRANGE{0, cut}
@@ -917,24 +1125,26 @@ func (a *App) setState(st string) {
 		st = "unknown"
 	}
 	a.curState = st
-	switch st {
-	case "running":
-		a.stateColor = RGB(0, 140, 60)
-	case "offline":
-		a.stateColor = RGB(200, 0, 0)
-	case "starting", "stopping":
-		a.stateColor = RGB(210, 120, 0)
-	default:
-		a.stateColor = RGB(90, 90, 90)
-	}
-	SetText(a.lState, "● "+strings.ToUpper(st))
+	SetText(a.lState, "●  "+strings.ToUpper(st))
 	pInvalidateRect.Call(a.lState, 0, 1)
 	if a.cur != nil {
 		a.setRowState(a.cur.Identifier, st)
 	}
-	if st == "offline" {
+	switch st {
+	case "offline":
 		SetText(a.lStats, "")
+		a.killVisible = false
+		a.stopGen++
+		a.setPlayers(nil)
+	case "starting":
+		a.setPlayers(nil)
+	case "running":
+		if a.killVisible { // restart got through
+			a.killVisible = false
+			a.stopGen++
+		}
 	}
+	a.updateButtons()
 }
 
 func (a *App) showStats(st pelican.Stats) {
@@ -942,42 +1152,138 @@ func (a *App) showStats(st pelican.Stats) {
 	if st.MemoryLimitBytes > 0 {
 		mem += " / " + pelican.HumanBytes(st.MemoryLimitBytes)
 	}
-	s := fmt.Sprintf("CPU %.1f%%   RAM %s   Disk %s", st.CPUAbsolute, mem, pelican.HumanBytes(st.DiskBytes))
+	s := fmt.Sprintf("CPU %.1f%%    RAM %s    Disk %s", st.CPUAbsolute, mem, pelican.HumanBytes(st.DiskBytes))
 	if st.Uptime > 0 {
-		s += "   Up " + pelican.HumanUptime(st.Uptime)
+		s += "    Up " + pelican.HumanUptime(st.Uptime)
 	}
 	SetText(a.lStats, s)
 }
 
 func (a *App) onWSEvent(ev string, args []string) {
-	switch ev {
-	case "backup completed":
-		var b struct {
-			IsSuccessful bool  `json:"is_successful"`
-			FileSize     int64 `json:"file_size"`
+	if ev != "backup completed" {
+		return
+	}
+	var b struct {
+		IsSuccessful bool  `json:"is_successful"`
+		FileSize     int64 `json:"file_size"`
+	}
+	if len(args) > 0 {
+		_ = json.Unmarshal([]byte(args[0]), &b)
+	}
+	if b.IsSuccessful {
+		msg := "✔ Backup completed"
+		if b.FileSize > 0 {
+			msg += " (" + pelican.HumanBytes(b.FileSize) + ")"
 		}
-		if len(args) > 0 {
-			_ = json.Unmarshal([]byte(args[0]), &b)
+		a.feedback(msg, fbOK)
+		a.appendConsole([]pendLine{{a.gen, "── " + msg + " ──", lineInfo}})
+	} else {
+		a.feedback("✖ Backup failed — check the panel's Backups tab", fbErr)
+		a.appendConsole([]pendLine{{a.gen, "── Backup failed ──", pelican.LineError}})
+	}
+}
+
+// ---------------- players ----------------
+
+func (a *App) setPlayers(list []string) {
+	seen := map[string]bool{}
+	var out []string
+	for _, p := range list {
+		k := strings.ToLower(p)
+		if p != "" && !seen[k] {
+			seen[k] = true
+			out = append(out, p)
 		}
-		if b.IsSuccessful {
-			msg := "✔ Backup completed"
-			if b.FileSize > 0 {
-				msg += " (" + pelican.HumanBytes(b.FileSize) + ")"
+	}
+	sort.Slice(out, func(i, j int) bool { return strings.ToLower(out[i]) < strings.ToLower(out[j]) })
+	a.players = out
+	lbSet(a.lbPlayers, out)
+	text := GetText(a.cbPlayer)
+	comboSet(a.cbPlayer, out)
+	SetText(a.cbPlayer, text)
+	a.invalidatePlayersCaption()
+}
+
+func (a *App) addPlayer(n string) {
+	for _, p := range a.players {
+		if strings.EqualFold(p, n) {
+			return
+		}
+	}
+	a.setPlayers(append(append([]string(nil), a.players...), n))
+}
+
+func (a *App) removePlayer(n string) {
+	var out []string
+	for _, p := range a.players {
+		if !strings.EqualFold(p, n) {
+			out = append(out, p)
+		}
+	}
+	a.setPlayers(out)
+}
+
+func (a *App) refreshPlayers(silent bool) {
+	if a.cur == nil {
+		return
+	}
+	if !a.connected {
+		if !silent {
+			a.feedback("✖ Console not connected — can't read the player list.", fbErr)
+		}
+		return
+	}
+	a.plParser = &pelican.PlayerListParser{}
+	a.plSilent = silent
+	a.plGen++
+	g := a.plGen
+	if !silent {
+		a.appendConsole([]pendLine{{a.gen, "> list", lineEcho}})
+		a.feedback("… fetching online players", fbBusy)
+	}
+	c, id := a.client, a.cur.Identifier
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		err := c.SendCommand(ctx, id, "list")
+		cancel()
+		Post(func() {
+			if err != nil && g == a.plGen {
+				a.plParser = nil
+				if !silent {
+					a.feedback("✖ list: "+err.Error(), fbErr)
+				}
 			}
-			a.feedback(msg, fbOK)
-			a.appendConsole([]pendLine{{a.gen, "── " + msg + " ──", lineInfo}})
-		} else {
-			a.feedback("✖ Backup failed — check the panel's Backups tab", fbErr)
-			a.appendConsole([]pendLine{{a.gen, "── Backup failed ──", pelican.LineError}})
-		}
+		})
+		time.Sleep(4 * time.Second)
+		Post(func() {
+			if g == a.plGen && a.plParser != nil {
+				a.plParser = nil
+				if !silent {
+					a.feedback("✖ Couldn't read a player list from the console reply.", fbErr)
+				}
+			}
+		})
+	}()
+}
+
+func (a *App) playersDone() {
+	p := a.plParser
+	a.plParser = nil
+	a.setPlayers(p.Players)
+	if a.plSilent {
+		return
+	}
+	if len(p.Players) == 0 {
+		a.feedback("✔ No players online", fbInfo)
+	} else {
+		a.feedback(fmt.Sprintf("✔ %d online: %s", len(p.Players), strings.Join(p.Players, ", ")), fbOK)
 	}
 }
 
 // ---------------- commands ----------------
 
 func (a *App) sendFromInput() {
-	cmd := strings.TrimSpace(GetText(a.eCmd))
-	cmd = strings.TrimPrefix(cmd, "/")
+	cmd := strings.TrimPrefix(strings.TrimSpace(GetText(a.eCmd)), "/")
 	if cmd == "" {
 		return
 	}
@@ -994,7 +1300,7 @@ func (a *App) sendFromInput() {
 
 func (a *App) runQuick(q QuickCmd) { a.runTemplate(q.Name, q.Command) }
 
-// runTemplate expands placeholders and sends each line as a command.
+// runTemplate expands placeholders (in the label too) and sends each line as a command.
 func (a *App) runTemplate(label, tmpl string) {
 	if a.cur == nil {
 		a.feedback("Connect to a server first.", fbErr)
@@ -1004,15 +1310,16 @@ func (a *App) runTemplate(label, tmpl string) {
 	if strings.Contains(text, "{player}") {
 		p := strings.TrimSpace(GetText(a.cbPlayer))
 		if p == "" {
-			a.feedback("✖ "+label+": enter or pick a player in the Player box first.", fbErr)
+			a.feedback("✖ Pick a player first (Player box or Online Players list).", fbErr)
 			Focus(a.cbPlayer)
 			return
 		}
 		text = strings.ReplaceAll(text, "{player}", quoteName(p))
+		label = strings.ReplaceAll(label, "{player}", p)
 	}
 	if strings.Contains(text, "{me}") {
 		if strings.TrimSpace(a.cfg.IGN) == "" {
-			a.feedback("✖ "+label+": set your in-game name in File → Settings.", fbErr)
+			a.feedback("✖ Set your in-game name in Settings first.", fbErr)
 			return
 		}
 		text = strings.ReplaceAll(text, "{me}", quoteName(a.cfg.IGN))
@@ -1027,21 +1334,19 @@ func (a *App) runTemplate(label, tmpl string) {
 	}
 	var cmds []string
 	for _, ln := range strings.Split(text, "\n") {
-		ln = strings.TrimPrefix(strings.TrimSpace(ln), "/")
-		if ln != "" {
+		if ln = strings.TrimPrefix(strings.TrimSpace(ln), "/"); ln != "" {
 			cmds = append(cmds, ln)
 		}
 	}
-	if len(cmds) == 0 {
-		return
+	if len(cmds) > 0 {
+		a.sendCommands(cmds, label)
 	}
-	a.sendCommands(cmds, label)
 }
 
 // quoteName wraps names containing spaces (Bedrock gamertags) in quotes.
 func quoteName(n string) string {
 	n = strings.TrimSpace(n)
-	if strings.ContainsAny(n, " ") && !strings.HasPrefix(n, "\"") {
+	if strings.Contains(n, " ") && !strings.HasPrefix(n, "\"") {
 		return "\"" + n + "\""
 	}
 	return n
@@ -1112,86 +1417,34 @@ func (a *App) finishCapture() {
 	label := a.capLabel
 	for _, l := range a.capLines {
 		if pelican.IsErrorLine(l) {
-			a.feedback("✖ "+label+": "+cleanLine(l), fbErr)
+			a.feedback("✖ "+label+": "+short(pelican.CleanPrefix(l)), fbErr)
 			return
 		}
 	}
 	if len(a.capLines) > 0 {
-		a.feedback("✔ "+label+": "+cleanLine(a.capLines[0]), fbOK)
+		a.feedback("✔ "+label+": "+short(pelican.CleanPrefix(a.capLines[0])), fbOK)
 		return
 	}
 	a.feedback("✔ Sent: "+label+"  (no console reply)", fbInfo)
 }
 
-func cleanLine(s string) string {
-	s = strings.TrimSpace(s)
-	for strings.HasPrefix(s, "[") {
-		i := strings.Index(s, "]")
-		if i < 0 {
-			break
-		}
-		s = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(s[i+1:]), ":"))
-	}
+func short(s string) string {
 	if len(s) > 220 {
-		s = s[:220] + "…"
+		return s[:220] + "…"
 	}
 	return s
-}
-
-func (a *App) refreshPlayers() {
-	if a.cur == nil {
-		return
-	}
-	if !a.connected {
-		a.feedback("✖ Console not connected — can't read the player list.", fbErr)
-		return
-	}
-	a.plParser = &pelican.PlayerListParser{}
-	a.plGen++
-	g := a.plGen
-	a.appendConsole([]pendLine{{a.gen, "> list", lineEcho}})
-	a.feedback("… fetching online players", fbBusy)
-	c, id := a.client, a.cur.Identifier
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-		err := c.SendCommand(ctx, id, "list")
-		cancel()
-		Post(func() {
-			if err != nil && g == a.plGen {
-				a.plParser = nil
-				a.feedback("✖ list: "+err.Error(), fbErr)
-			}
-		})
-		time.Sleep(4 * time.Second)
-		Post(func() {
-			if g == a.plGen && a.plParser != nil {
-				a.plParser = nil
-				a.feedback("✖ Couldn't read a player list from the console reply.", fbErr)
-			}
-		})
-	}()
-}
-
-func (a *App) playersDone() {
-	p := a.plParser
-	a.plParser = nil
-	text := GetText(a.cbPlayer)
-	comboSet(a.cbPlayer, p.Players)
-	SetText(a.cbPlayer, text)
-	if text == "" && len(p.Players) > 0 {
-		SendMessage(a.cbPlayer, CB_SETCURSEL, 0, 0)
-	}
-	if len(p.Players) == 0 {
-		a.feedback("✔ No players online", fbInfo)
-	} else {
-		a.feedback(fmt.Sprintf("✔ %d online: %s", len(p.Players), strings.Join(p.Players, ", ")), fbOK)
-	}
 }
 
 // ---------------- power / backup ----------------
 
 func (a *App) power(sig string) {
 	if a.cur == nil {
+		return
+	}
+	if sig == "stop" && a.curState == "stopping" {
+		a.killVisible = true
+		a.updateButtons()
+		a.feedback("Server is still stopping — use Kill to force it.", fbWarn)
 		return
 	}
 	if sig != "start" {
@@ -1205,7 +1458,7 @@ func (a *App) power(sig string) {
 		}
 	}
 	a.feedback("… "+sig+" signal", fbBusy)
-	c, id, name := a.client, a.cur.Identifier, a.cur.Name
+	c, id, name, gen := a.client, a.cur.Identifier, a.cur.Name, a.gen
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		err := c.Power(ctx, id, sig)
@@ -1216,6 +1469,28 @@ func (a *App) power(sig string) {
 				return
 			}
 			a.feedback("✔ "+strings.ToUpper(sig[:1])+sig[1:]+" signal sent to "+name, fbOK)
+			switch sig {
+			case "stop", "restart":
+				a.stopGen++
+				sg := a.stopGen
+				time.AfterFunc(15*time.Second, func() {
+					Post(func() {
+						if gen != a.gen || sg != a.stopGen {
+							return
+						}
+						stuck := a.curState == "stopping" || (sig == "stop" && a.curState == "running")
+						if stuck {
+							a.killVisible = true
+							a.updateButtons()
+							a.feedback("⚠ "+name+" hasn't stopped after 15 s — Kill is now available.", fbWarn)
+						}
+					})
+				})
+			case "start", "kill":
+				a.stopGen++
+				a.killVisible = false
+				a.updateButtons()
+			}
 		})
 	}()
 }
@@ -1258,9 +1533,11 @@ func (a *App) rebuildQuick() {
 	}
 	a.quickBtns = nil
 	for i, q := range a.cfg.QuickCommands {
-		h := a.w.Button(q.Name, idQuickBase+i)
+		h := a.w.Btn(q.Name, idQuickBase+i, kNormal)
+		onSurface[h] = true
 		a.quickBtns = append(a.quickBtns, h)
 	}
+	a.w.ApplyTheme()
 	a.updateButtons()
 	r := ClientRect(a.w.Hwnd)
 	a.layout(int(r.Right), int(r.Bottom))

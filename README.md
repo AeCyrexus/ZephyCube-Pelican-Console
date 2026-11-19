@@ -1,4 +1,4 @@
-# ZephyCube Pelican Console v1.0.0
+# ZephyCube Pelican Console v1.1.0
 
 Native Windows RCON-style client for Pelican panel servers. Single `.exe`, no browser, no runtime, no installer.
 Talks to the Pelican **Client API** (REST) for commands/power/backups and to the **Wings console websocket** for live output.
@@ -17,14 +17,15 @@ Config: `%APPDATA%\ZephyCube\PelicanConsole\config.json`
 ## Features
 | Area | What it does |
 |---|---|
-| Server list | All servers (paginated) with live state + node. F5 refreshes. Double-click / Enter / Connect opens the console. Last server auto-connects on launch. |
-| Console | Live Wings output (history on connect), auto-reconnect, token refresh. Colour: red = error, yellow = warn, blue = daemon, pink = your commands. Auto-scroll toggle, Ctrl+L clears. |
-| Commands | Enter to send, ↑/↓ history. Sent via `POST /servers/{id}/command`. |
-| Feedback line | After each command it reads the console reply for ~1.5 s: **✔ green** = reply OK, **✖ red** = error text detected (unknown command, no targets matched, syntax error…), or the HTTP error (e.g. server offline). |
-| Player actions | Player box (type or pick) + **Online ↻** (runs `list`, parses Java/Paper & Bedrock output). Set gamemode, TP me → player (`tp {me} {player}`), Summon player → me (`tp {player} {me}`). Gamertags with spaces are quoted automatically. |
-| Quick commands | Custom buttons (Quick Commands → Manage). Multi-line = several commands in order. Placeholders: `{player}` `{me}` `{input}` (prompts) `{server}`. |
-| Power | Start / Stop / Restart / Kill (confirm on destructive ones). Live stats: CPU, RAM, disk, uptime. |
-| Backups | Create backup (named, defaults to timestamp). Completion/failure shown when Wings reports `backup completed`. |
+| Look | ZephyCube logo (exe + window icon), dark mode by default, light mode via header toggle or Settings. |
+| Server list | All servers (paginated), state colour-coded, node. F5 refreshes. Double-click / Enter / Connect. Last server auto-connects. |
+| Console | Live Wings output, auto-reconnect, token refresh. Red = error, yellow = warn, blue = daemon, pink = your commands, green = joins/leaves. Auto-scroll toggle, Ctrl+L clears. |
+| Commands | Enter to send, ↑/↓ history. Feedback line: ✔ green reply OK / ✖ red error detected / HTTP error. |
+| Online players | `list` runs automatically after connecting; joins/leaves are tracked live from the console (Java/Paper and Bedrock BDS). Click a name to fill the Player box. ↻ re-syncs. |
+| Player actions | Player box, **Gamemode** group (mode + Set), **Teleport** group: **TP** (you → player) and **Summon** (player → you). |
+| Power | Start only when offline, Stop when not offline, Restart when running. **Kill** appears only if Stop/Restart hasn't finished after 15 s, or if you press Stop again while stopping. |
+| Backups | Named backup, completion/failure reported. |
+| Quick commands | Custom buttons, multi-line, placeholders `{player}` `{me}` `{input}` `{server}`. |
 
 ## Troubleshooting
 - **Websocket HTTP 403** → Panel URL in Settings doesn't match the panel URL Wings was configured with (scheme + host).
@@ -37,4 +38,5 @@ Pure Go stdlib, no cgo, no dependencies (raw Win32 + own websocket client).
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-H windowsgui -s -w" -o PelicanConsole.exe .
 go test ./pelican
 ```
+Icon/manifest/version resources: `go run ./tools/genres 1.1.0` (writes `rsrc_windows_amd64.syso`, picked up by `go build`).
 Windows: `build.bat`.

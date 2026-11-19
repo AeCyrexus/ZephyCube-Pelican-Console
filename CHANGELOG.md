@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0] - 2026-11-19
+### Added
+- ZephyCube logo as exe/window/header icon (embedded resources + version info).
+- Dark mode (default) and light mode; themed owner-drawn controls, dark title bars.
+- Automatic `list` after connecting and live join/leave tracking with an Online Players panel.
+### Changed
+- Start/Stop/Restart enable based on server state; Kill only shown when a stop hangs.
+- "TP me → player" / "Summon player → me" renamed to TP / Summon and grouped under Teleport; gamemode grouped.
+- Menu bar replaced by header buttons (Dark mode, Settings, Help).
+
 ## [1.0.0] - 2026-11-19
 ### Added
 - Native Win32 client (single exe, no browser) for the Pelican Client API.

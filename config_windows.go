@@ -22,6 +22,7 @@ type Config struct {
 	IGN           string     `json:"ign"`
 	AdminAll      bool       `json:"admin_all"`
 	LastServer    string     `json:"last_server"`
+	LightMode     bool       `json:"light_mode"`
 	QuickCommands []QuickCmd `json:"quick_commands"`
 	apiKey        string
 }

@@ -286,3 +286,25 @@ func TestPlayerList(t *testing.T) {
 		t.Error("ansi")
 	}
 }
+
+func TestJoinLeave(t *testing.T) {
+	cases := []struct {
+		line   string
+		name   string
+		joined bool
+		ok     bool
+	}{
+		{"[12:00:00 INFO]: Steve joined the game", "Steve", true, true},
+		{"[12:00:00] [Server thread/INFO] [minecraft/MinecraftServer]: .Bedrock_Guy left the game", ".Bedrock_Guy", false, true},
+		{"[2026-11-19 13:00:00:123 INFO] Player connected: Ae Cyrexus, xuid: 2535411", "Ae Cyrexus", true, true},
+		{"[2026-11-19 13:00:00:123 INFO] Player disconnected: Bob, xuid: 2535411, pfid: x", "Bob", false, true},
+		{"[12:00:00 INFO]: <Steve> my friend joined the game", "", false, false},
+		{"Player Spawned: Bob xuid: 1", "", false, false},
+	}
+	for _, c := range cases {
+		n, j, ok := ParseJoinLeave(c.line)
+		if n != c.name || j != c.joined || ok != c.ok {
+			t.Errorf("%q → %q %v %v", c.line, n, j, ok)
+		}
+	}
+}

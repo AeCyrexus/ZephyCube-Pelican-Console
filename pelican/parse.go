@@ -61,6 +61,9 @@ type PlayerListParser struct {
 	Done    bool
 }
 
+// CleanPrefix strips log prefixes like "[12:00:00 INFO]: " / BDS timestamps.
+func CleanPrefix(s string) string { return cleanPrefix(s) }
+
 func cleanPrefix(s string) string {
 	s = prefixRe.ReplaceAllString(s, "")
 	s = bdsPrefixRe.ReplaceAllString(s, "")
@@ -146,4 +149,21 @@ func HumanUptime(ms int64) string {
 	default:
 		return fmt.Sprintf("%dm", m)
 	}
+}
+
+// ---- join / leave tracking ----
+
+var javaJoinRe = regexp.MustCompile(`^([A-Za-z0-9_.*\-]{1,32}) (joined|left) the game\.?$`)
+var bdsJoinRe = regexp.MustCompile(`Player (connected|disconnected): (.+?), xuid`)
+
+// ParseJoinLeave detects player join/leave lines (Java/Paper and Bedrock BDS).
+func ParseJoinLeave(line string) (name string, joined, ok bool) {
+	l := cleanPrefix(line)
+	if m := bdsJoinRe.FindStringSubmatch(l); m != nil {
+		return strings.TrimSpace(m[2]), m[1] == "connected", true
+	}
+	if m := javaJoinRe.FindStringSubmatch(l); m != nil {
+		return m[1], m[2] == "joined", true
+	}
+	return "", false, false
 }
