@@ -107,7 +107,7 @@ func (a *App) connect(srv pelican.Server) {
 			s.bedrock = pelican.GuessBedrock(srv)
 		}
 		a.sessions[srv.Identifier] = s
-		a.addLines(s, []pendLine{{s, fmt.Sprintf("── Connecting to %s (%s) on %s ──", srv.Name, srv.Identifier, srv.Node), lineInfo}})
+		a.addLines(s, []pendLine{{s, fmt.Sprintf("── Connecting to %s (%s, %s) on %s ──", srv.Name, srv.Identifier, eggLabel(srv), srv.Node), lineInfo}})
 		s.connMsg = "◌ Connecting to console…"
 		a.openConsole(s)
 	}

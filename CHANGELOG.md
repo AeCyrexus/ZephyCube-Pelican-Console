@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.1] - 2026-11-23
+### Changed
+- Server list shows each server's egg (e.g. Paper, Bedrock) instead of the node; the left column is slightly wider to fit it. The egg also feeds the Java/Bedrock auto-detection.
+- Releases are published automatically on every push to `main` (version from the top CHANGELOG entry).
+
 ## [1.5.0] - 2026-11-19
 ### Added
 - Right-click a player in Online Players: Teleport, Summon, Gamemode, Give / Effect (uses the current Player Actions selection), Clear effects / inventory, Kick… / Ban… with a reason, Op / Deop, Copy name, Copy XUID.

@@ -155,7 +155,17 @@ type Server struct {
 	FeatureLimits struct {
 		Backups int `json:"backups"`
 	} `json:"feature_limits"`
+	Relationships struct {
+		Egg struct {
+			Attributes struct {
+				Name string `json:"name"`
+			} `json:"attributes"`
+		} `json:"egg"`
+	} `json:"relationships"`
 }
+
+// EggName is the server's egg (from ?include=egg), or "" if the panel didn't send it.
+func (s Server) EggName() string { return strings.TrimSpace(s.Relationships.Egg.Attributes.Name) }
 
 type Resources struct {
 	CurrentState string `json:"current_state"`
@@ -202,7 +212,7 @@ func (c *Client) Account(ctx context.Context) (Account, error) {
 func (c *Client) ListServers(ctx context.Context, adminAll bool) ([]Server, error) {
 	var all []Server
 	for page := 1; page <= 200; page++ {
-		q := fmt.Sprintf("/api/client?page=%d&per_page=100", page)
+		q := fmt.Sprintf("/api/client?page=%d&per_page=100&include=egg", page)
 		if adminAll {
 			q += "&type=admin-all"
 		}
@@ -324,6 +334,6 @@ func OldestRemovable(bs []Backup) *Backup {
 
 // GuessBedrock reports whether a server looks like Bedrock (BDS) from its startup/image.
 func GuessBedrock(s Server) bool {
-	h := strings.ToLower(s.Invocation + " " + s.DockerImage + " " + s.Name + " " + s.Description)
+	h := strings.ToLower(s.EggName() + " " + s.Invocation + " " + s.DockerImage + " " + s.Name + " " + s.Description)
 	return strings.Contains(h, "bedrock") || strings.Contains(h, "bedrock_server") || strings.Contains(h, " bds")
 }

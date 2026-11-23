@@ -18,8 +18,8 @@ import (
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.5.0"
-var appVersion = "1.5.0"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.5.1"
+var appVersion = "1.5.1"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -316,7 +316,7 @@ func (a *App) build() {
 	SendMessage(a.lv, LVM_SETEXTENDEDLISTVIEWSTYLE, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER, LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER)
 	lvAddColumn(a.lv, 0, "Server", S(150))
 	lvAddColumn(a.lv, 1, "State", S(70))
-	lvAddColumn(a.lv, 2, "Node", S(60))
+	lvAddColumn(a.lv, 2, "Egg", S(64))
 	a.bRefresh = w.Btn("Refresh", idRefresh, kNormal)
 	a.bConnect = w.Btn("Connect", idConnect, kPrimary)
 	a.bShowHidden = w.Btn("", idShowHidden, kNormal)
@@ -581,7 +581,7 @@ func (a *App) layout(cw, ch int) {
 	Move(a.lHost, cw-m-S(200), bottom, S(200), statusH)
 
 	// ---- left column ----
-	lw := S(220)
+	lw := S(236)
 	playersH := S(170)
 	in := m + pad
 	iw := lw - 2*pad
@@ -612,9 +612,9 @@ func (a *App) layout(cw, ch int) {
 		half := (iw - g) / 2
 		Move(a.bRefresh, in, btnY, half, bh)
 		Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(62)-S(44)-S(4)))
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(62)))
-		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(44)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 0, uintptr(iw-S(58)-S(64)-S(4)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 1, uintptr(S(58)))
+		SendMessage(a.lv, LVM_SETCOLUMNWIDTH, 2, uintptr(S(64)))
 		pcTop = sc.Bottom + int32(g)
 	}
 	pc := RECT{int32(m), pcTop, int32(m + lw), int32(bottom)}
@@ -1074,13 +1074,25 @@ func (a *App) fillList() {
 	SendMessage(a.lv, WM_SETREDRAW, 0, 0)
 	SendMessage(a.lv, LVM_DELETEALLITEMS, 0, 0)
 	for i, s := range a.rows {
-		lvAddRow(a.lv, i, a.rowName(s), a.states[s.Identifier], s.Node)
+		lvAddRow(a.lv, i, a.rowName(s), a.states[s.Identifier], eggLabel(s))
 		if s.Identifier == sel {
 			lvSelect(a.lv, i)
 		}
 	}
 	SendMessage(a.lv, WM_SETREDRAW, 1, 0)
 	pInvalidateRect.Call(a.lv, 0, 1)
+}
+
+// eggLabel is the egg name for the server list, shortened ("Minecraft" dropped).
+func eggLabel(s pelican.Server) string {
+	e := s.EggName()
+	if t := strings.TrimSpace(strings.TrimPrefix(e, "Minecraft")); t != "" {
+		e = t
+	}
+	if e == "" {
+		return "—"
+	}
+	return e
 }
 
 func (a *App) setRowState(id, state string) {

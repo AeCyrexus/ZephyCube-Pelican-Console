@@ -84,11 +84,15 @@ func newFake(t *testing.T) (*fake, *httptest.Server) {
 		if !auth(w, r) {
 			return
 		}
+		if r.URL.Query().Get("include") != "egg" {
+			http.Error(w, "missing include=egg", 400)
+			return
+		}
 		page := r.URL.Query().Get("page")
 		if page == "1" {
-			w.Write([]byte(`{"object":"list","data":[{"object":"server","attributes":{"identifier":"abc12345","uuid":"u1","name":"ZEPHORIA SMP","node":"PHL-01","status":null,"description":null,"limits":{"memory":4096,"disk":0,"cpu":0},"feature_limits":{"backups":3}}}],"meta":{"pagination":{"total":2,"total_pages":2}}}`))
+			w.Write([]byte(`{"object":"list","data":[{"object":"server","attributes":{"identifier":"abc12345","uuid":"u1","name":"ZEPHORIA SMP","node":"PHL-01","status":null,"description":null,"limits":{"memory":4096,"disk":0,"cpu":0},"feature_limits":{"backups":3},"relationships":{"egg":{"object":"egg","attributes":{"uuid":"e1","name":"Paper"}}}}}],"meta":{"pagination":{"total":2,"total_pages":2}}}`))
 		} else {
-			w.Write([]byte(`{"object":"list","data":[{"object":"server","attributes":{"identifier":"def67890","uuid":"u2","name":"Hardcore","node":"SGP-01"}}],"meta":{"pagination":{"total":2,"total_pages":2}}}`))
+			w.Write([]byte(`{"object":"list","data":[{"object":"server","attributes":{"identifier":"def67890","uuid":"u2","name":"Hardcore","node":"SGP-01","relationships":{"egg":{"object":"egg","attributes":{"uuid":"e2","name":"Vanilla Bedrock"}}}}}],"meta":{"pagination":{"total":2,"total_pages":2}}}`))
 		}
 	})
 	mux.HandleFunc("/api/client/servers/abc12345/command", func(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +193,8 @@ func TestAPI(t *testing.T) {
 	c := New(s.URL+"/", "KEY")
 	ctx := t.Context()
 	srv, err := c.ListServers(ctx, false)
-	if err != nil || len(srv) != 2 || srv[0].Name != "ZEPHORIA SMP" || srv[1].Node != "SGP-01" || srv[0].FeatureLimits.Backups != 3 {
+	if err != nil || len(srv) != 2 || srv[0].Name != "ZEPHORIA SMP" || srv[1].Node != "SGP-01" || srv[0].FeatureLimits.Backups != 3 ||
+		srv[0].EggName() != "Paper" || !GuessBedrock(srv[1]) || GuessBedrock(srv[0]) {
 		t.Fatalf("list: %v %+v", err, srv)
 	}
 	if err := c.SendCommand(ctx, "abc12345", "gamemode creative Steve"); err != nil {

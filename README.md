@@ -10,7 +10,7 @@ Single `.exe` — no browser, no runtime, no installer. Talks to the Pelican **C
 ## Features
 | Area | What it does |
 |---|---|
-| Servers | All servers (paginated), live state, node. Hide servers (right-click), hide the whole list (Ctrl+B). Last server auto-connects. |
+| Servers | All servers (paginated), live state, egg. Hide servers (right-click), hide the whole list (Ctrl+B). Last server auto-connects. |
 | Background consoles | Switching servers keeps the other consoles connected and logging; unread ◉ and error ⚠ badges in the server list. |
 | Console | Live output with colours (errors, warnings, daemon, joins/leaves, your commands), auto-reconnect, history, per-command ✔/✖ feedback. |
 | Power | Start / Stop / Restart enabled by state; **Kill** only appears when a stop hangs. Live CPU / RAM / disk / uptime. |
