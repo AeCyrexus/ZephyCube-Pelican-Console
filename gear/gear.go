@@ -88,6 +88,37 @@ func MaxEnchants(id string) []Ench {
 	return nil
 }
 
+// MaxEnchantsFor is MaxEnchants filtered for the edition (Bedrock has no Sweeping Edge).
+func MaxEnchantsFor(id string, bedrock bool) []Ench {
+	all := MaxEnchants(id)
+	if !bedrock {
+		return all
+	}
+	var out []Ench
+	for _, e := range all {
+		if e.ID != "sweeping_edge" {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// BedrockToHand puts an item into the target's main hand only if it is empty
+// ("keep"), so the following /enchant commands can't hit another item.
+func BedrockToHand(target, id string, qty int) string {
+	id = strings.TrimPrefix(strings.ToLower(strings.TrimSpace(id)), "minecraft:")
+	return fmt.Sprintf("replaceitem entity %s slot.weapon.mainhand 0 keep %s %d", target, id, qty)
+}
+
+// EnchantCmds returns one /enchant command per enchantment (works on the held item).
+func EnchantCmds(target string, ench []Ench) []string {
+	out := make([]string, len(ench))
+	for i, e := range ench {
+		out[i] = fmt.Sprintf("enchant %s %s %d", target, e.ID, e.Level)
+	}
+	return out
+}
+
 // JavaGive builds a Java 1.21.5+ give command (item components syntax).
 // target is inserted as-is (already quoted if needed).
 func JavaGive(target, id string, qty int, ench []Ench) string {

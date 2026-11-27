@@ -63,3 +63,18 @@ func TestGive(t *testing.T) {
 		t.Fatal("bedrock")
 	}
 }
+
+func TestBedrockHand(t *testing.T) {
+	if BedrockToHand("Steve", "minecraft:diamond_helmet", 1) != "replaceitem entity Steve slot.weapon.mainhand 0 keep diamond_helmet 1" {
+		t.Fatal("hand")
+	}
+	for _, e := range MaxEnchantsFor("diamond_sword", true) {
+		if e.ID == "sweeping_edge" {
+			t.Fatal("sweeping_edge on bedrock")
+		}
+	}
+	c := EnchantCmds("Steve", []Ench{{"protection", 4}, {"mending", 1}})
+	if len(c) != 2 || c[0] != "enchant Steve protection 4" || c[1] != "enchant Steve mending 1" {
+		t.Fatal(c)
+	}
+}

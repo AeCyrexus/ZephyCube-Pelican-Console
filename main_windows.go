@@ -19,8 +19,8 @@ import (
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.0"
-var appVersion = "1.6.0"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.1"
+var appVersion = "1.6.1"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -155,6 +155,10 @@ type App struct {
 	capActive bool
 	capLabel  string
 	capLines  []string
+	// capThen runs after the capture of send #capThenGen finishes (ok = reply, no error).
+	capThen    func(ok bool)
+	capThenGen int
+	armorStep  map[string]int // Bedrock hand-enchant: next piece per player+material
 
 	pendMu    sync.Mutex
 	pending   []pendLine
@@ -1355,6 +1359,7 @@ func (a *App) sendCommands(cmds []string, label string) {
 	a.addLines(sess, echo)
 
 	a.capGen++
+	a.capThen = nil
 	capGen := a.capGen
 	a.capActive = true
 	a.capLabel = label
@@ -1406,17 +1411,63 @@ func (a *App) sendCommands(cmds []string, label string) {
 func (a *App) finishCapture() {
 	a.capActive = false
 	label := a.capLabel
+	then := a.capThen
+	if a.capThenGen != a.capGen {
+		then = nil
+	}
+	a.capThen = nil
 	for _, l := range a.capLines {
 		if pelican.IsErrorLine(l) {
 			a.feedback("✖ "+label+": "+short(pelican.CleanPrefix(l)), fbErr)
+			if then != nil {
+				then(false)
+			}
 			return
 		}
 	}
 	if len(a.capLines) > 0 {
 		a.feedback("✔ "+label+": "+short(pelican.CleanPrefix(a.capLines[0])), fbOK)
+		if then != nil {
+			then(true)
+		}
 		return
 	}
 	a.feedback("✔ Sent: "+label+"  (no console reply)", fbInfo)
+	if then != nil {
+		then(false)
+	}
+}
+
+// runThen is runTemplate plus a callback once the console reply has been checked.
+// The callback doesn't run if nothing was sent (e.g. no player picked).
+func (a *App) runThen(label, tmpl string, then func(ok bool)) {
+	g := a.capGen
+	a.runTemplate(label, tmpl)
+	if a.capGen != g {
+		a.capThen, a.capThenGen = then, a.capGen
+	}
+}
+
+// bedrockHandEnchant: put the item into the player's empty hand, and only if that
+// worked, enchant it with /enchant. done gets the final result.
+func (a *App) bedrockHandEnchant(id string, qty int, done func(ok bool)) {
+	player := strings.TrimSpace(GetText(a.cbPlayer))
+	a.runThen("Put "+id+" in {player}'s hand", gear.BedrockToHand("{player}", id, qty), func(ok bool) {
+		if !ok {
+			a.feedback("✖ Couldn't put "+id+" in "+player+"'s hand — their hand must be empty (nothing was enchanted).", fbErr)
+			if done != nil {
+				done(false)
+			}
+			return
+		}
+		ench := gear.MaxEnchantsFor(id, true)
+		SetText(a.cbPlayer, player)
+		a.runThen("Enchant "+id+" → {player}", strings.Join(gear.EnchantCmds("{player}", ench), "\n"), func(ok bool) {
+			if done != nil {
+				done(ok)
+			}
+		})
+	})
 }
 
 func short(s string) string {
@@ -1595,9 +1646,6 @@ func (a *App) setEdition(bedrock bool) {
 	comboSet(a.cbEffect, names)
 	SendMessage(a.cbEffect, CB_SETCURSEL, uintptr(sel), 0)
 	a.filterItemCombo()
-	// vanilla Bedrock /give can't carry enchantments
-	Enable(a.tGiveEnch, !bedrock)
-	Enable(a.tArmorEnch, !bedrock)
 }
 
 func (a *App) filterItemCombo() {
@@ -1674,6 +1722,14 @@ func (a *App) give() {
 	}
 	label := fmt.Sprintf("Give %d %s → {player}", qty, id)
 	if a.bedrock {
+		if IsOn(a.tGiveEnch) && gear.MaxEnchants(id) != nil {
+			a.bedrockHandEnchant(id, qty, func(ok bool) {
+				if ok {
+					a.feedback("✔ "+id+" max-enchanted in "+GetText(a.cbPlayer)+"'s hand", fbOK)
+				}
+			})
+			return
+		}
 		a.runTemplate(label, gear.BedrockGive("{player}", id, qty))
 		return
 	}
@@ -1689,6 +1745,10 @@ func (a *App) give() {
 // giveArmor gives a full armor set, max-enchanted on Java when the toggle is on.
 func (a *App) giveArmor() {
 	mat := gear.ArmorMaterials[max(0, comboSel(a.cbArmor))]
+	if a.bedrock && IsOn(a.tArmorEnch) {
+		a.bedrockArmorStep(mat)
+		return
+	}
 	ench := !a.bedrock && IsOn(a.tArmorEnch)
 	var lines []string
 	for _, id := range gear.ArmorSet(mat) {
@@ -1703,10 +1763,44 @@ func (a *App) giveArmor() {
 	a.runTemplate(a.armorLabel()+" → {player}", strings.Join(lines, "\n"))
 }
 
+// bedrockArmorStep does one piece per click on Bedrock: the player must have an
+// empty hand, then equips the enchanted piece and the next click does the next one.
+func (a *App) bedrockArmorStep(mat string) {
+	player := strings.TrimSpace(GetText(a.cbPlayer))
+	if player == "" {
+		a.runTemplate("", "{player}") // shows the "pick a player" error
+		return
+	}
+	if a.armorStep == nil {
+		a.armorStep = map[string]int{}
+	}
+	key := strings.ToLower(player) + "|" + mat
+	step := a.armorStep[key] % len(gear.ArmorPieces)
+	id := gear.ArmorSet(mat)[step]
+	a.bedrockHandEnchant(id, 1, func(ok bool) {
+		if !ok {
+			return
+		}
+		piece := gear.ArmorPieces[step]
+		if step == len(gear.ArmorPieces)-1 {
+			delete(a.armorStep, key)
+			a.feedback(fmt.Sprintf("✔ %s %s enchanted in %s's hand (4/4) — set complete once equipped.", mat, piece, player), fbOK)
+			return
+		}
+		a.armorStep[key] = step + 1
+		a.feedback(fmt.Sprintf("✔ %s %s enchanted in %s's hand (%d/4) — have them equip it, then Give set again for the %s.",
+			mat, piece, player, step+1, gear.ArmorPieces[step+1]), fbOK)
+	})
+}
+
 func (a *App) armorLabel() string {
 	l := gear.ArmorMaterials[max(0, comboSel(a.cbArmor))] + " armor"
-	if !a.bedrock && IsOn(a.tArmorEnch) {
-		l += " (max enchant)"
+	if IsOn(a.tArmorEnch) {
+		if a.bedrock {
+			l += " (enchant in hand, piece by piece)"
+		} else {
+			l += " (max enchant)"
+		}
 	}
 	return l
 }

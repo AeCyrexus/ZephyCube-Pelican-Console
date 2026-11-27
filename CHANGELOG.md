@@ -1,11 +1,13 @@
 # Changelog
 
+## [1.6.1] - 2026-11-27
+### Changed
+- Bedrock max enchant now works: the item is put into the player's hand only if it's empty (`replaceitem … keep`), then `enchant <player> <enchant> <level>` runs for each enchantment. Nothing is enchanted if the hand wasn't empty. Armor sets go one piece per click (equip it, click again for the next); the feedback line says which piece is next.
+
 ## [1.6.0] - 2026-11-27
 ### Added
 - Armor in Player Actions: give a full set (Netherite, Diamond, Iron, Copper, Golden, Chainmail, Leather) with **Max enchant** (Java: Protection IV, Thorns III, Unbreaking III, Mending, plus Respiration/Aqua Affinity, Swift Sneak, Feather Falling/Depth Strider/Soul Speed per piece). Also in the player right-click menu.
 - **Max ench.** toggle on the Give row: max-enchants swords, spears, axes, tools, bows, crossbows, tridents, maces, fishing rods, armor, elytra, shields and more (Java).
-### Notes
-- Vanilla Bedrock /give can't enchant items, so on Bedrock the enchant toggles are disabled and items are given plain.
 
 ## [1.5.1] - 2026-11-23
 ### Changed
