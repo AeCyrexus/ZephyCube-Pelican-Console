@@ -28,6 +28,7 @@ const (
 	idPmHistory
 	idPmUse
 	idPmForget
+	idPmArmor
 	idPmMode // + index into modes
 )
 
@@ -131,6 +132,7 @@ func (a *App) playerMenu(owner uintptr, name string) {
 		} else {
 			appendMenu(menu, MF_GRAYED, idPmGive, "Give… (pick an item under Player Actions)")
 		}
+		appendMenu(menu, MF_STRING, idPmArmor, "Give "+a.armorLabel())
 		if e := a.effectLabel(); e != "" {
 			appendMenu(menu, MF_STRING, idPmEffect, e)
 		}
@@ -181,6 +183,8 @@ func (a *App) playerAction(owner uintptr, name string, cmd int) {
 		a.runTemplate("Summon {player}", "tp {player} {me}")
 	case idPmGive:
 		a.give()
+	case idPmArmor:
+		a.giveArmor()
 	case idPmEffect:
 		a.applyEffect()
 	case idPmEffClear:

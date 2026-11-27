@@ -14,12 +14,13 @@ import (
 	"unicode/utf16"
 	"unsafe"
 
+	"zephycube/pelicanconsole/gear"
 	"zephycube/pelicanconsole/pelican"
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.5.1"
-var appVersion = "1.5.1"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.0"
+var appVersion = "1.6.0"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -68,6 +69,10 @@ const (
 	idEffDur
 	idEffLvl
 	idGiveQty
+	idArmorMat
+	idArmorGive
+	idGiveEnch
+	idArmorEnch
 
 	idCtxConnect = 3001 + iota
 	idCtxHide
@@ -118,6 +123,8 @@ type App struct {
 	lEffect, cbEffect, lFor, eEffDur, lLvl, eEffLvl uintptr
 	bEffApply, bEffClear                            uintptr
 	lGive, cbItem, lQty, eGiveQty, bGive            uintptr
+	tGiveEnch                                       uintptr
+	lArmor, cbArmor, tArmorEnch, bArmorGive         uintptr
 	quickLabels                                     []uintptr
 	bedrock                                         bool
 	effView                                         []mcEffect
@@ -389,11 +396,19 @@ func (a *App) build() {
 	a.lQty = w.Label("×", SS_RIGHT)
 	a.eGiveQty = w.Edit("64", 0, idGiveQty)
 	a.bGive = w.Btn("Give", idGive, kSegment)
-	for _, h := range []uintptr{a.lPlayer, a.lMode, a.lTele, a.lEffect, a.lFor, a.lLvl, a.lGive, a.lQty} {
+	a.tGiveEnch = w.Toggle("Max ench.", idGiveEnch, false)
+	a.lArmor = w.Label("Armor", 0)
+	a.cbArmor = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idArmorMat, roleCombo)
+	comboSet(a.cbArmor, gear.ArmorMaterials)
+	SendMessage(a.cbArmor, CB_SETCURSEL, 0, 0)
+	a.tArmorEnch = w.Toggle("Max enchant", idArmorEnch, true)
+	a.bArmorGive = w.Btn("Give set", idArmorGive, kSegment)
+	for _, h := range []uintptr{a.lPlayer, a.lMode, a.lTele, a.lEffect, a.lFor, a.lLvl, a.lGive, a.lQty, a.lArmor} {
 		Muted(h)
 	}
 	surf(a.lPlayer, a.bClearInv, a.lMode, a.bGamemode, a.lTele, a.bTP, a.bSummon,
-		a.lEffect, a.lFor, a.lLvl, a.bEffApply, a.bEffClear, a.lGive, a.lQty, a.bGive)
+		a.lEffect, a.lFor, a.lLvl, a.bEffApply, a.bEffClear, a.lGive, a.lQty, a.bGive,
+		a.tGiveEnch, a.lArmor, a.tArmorEnch, a.bArmorGive)
 	a.setEdition(false)
 
 	// quick card
@@ -680,7 +695,8 @@ func (a *App) layout(cw, ch int) {
 		{outlined: true, items: []layoutItem{{a.lTele, S(58), false}, {a.bTP, S(44), false}, {a.bSummon, S(70), false}}},
 		{outlined: true, items: []layoutItem{{a.lEffect, S(42), false}, {a.cbEffect, S(150), true}, {a.lFor, S(22), false}, {a.eEffDur, S(62), false},
 			{a.lLvl, S(22), false}, {a.eEffLvl, S(32), false}, {a.bEffApply, S(52), false}, {a.bEffClear, S(50), false}}},
-		{outlined: true, items: []layoutItem{{a.lGive, S(32), false}, {a.cbItem, S(190), true}, {a.lQty, S(14), false}, {a.eGiveQty, S(40), false}, {a.bGive, S(48), false}}},
+		{outlined: true, items: []layoutItem{{a.lGive, S(32), false}, {a.cbItem, S(190), true}, {a.lQty, S(14), false}, {a.eGiveQty, S(40), false}, {a.tGiveEnch, S(74), false}, {a.bGive, S(48), false}}},
+		{outlined: true, items: []layoutItem{{a.lArmor, S(40), false}, {a.cbArmor, S(96), true}, {a.tArmorEnch, S(94), false}, {a.bArmorGive, S(64), false}}},
 	}
 	ph, _ := flowBlocks(pBlocks, irx, 0, irw, bh, g, gi, op, false)
 	pac := RECT{int32(rx), qc.Top - int32(g) - int32(capH+ph+pad), int32(rx + rw), qc.Top - int32(g)}
@@ -822,6 +838,8 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 		}
 	case idGive:
 		a.give()
+	case idArmorGive:
+		a.giveArmor()
 	case idTheme:
 		a.setDark(IsOn(a.bTheme), true)
 	case idListToggle:
@@ -967,7 +985,7 @@ func (a *App) updateButtons() {
 	} else {
 		Show(a.bKill, 0)
 	}
-	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bPlayersHistory, a.bGamemode, a.bTP, a.bSummon, a.bClearInv, a.bEffApply, a.bEffClear, a.bGive} {
+	for _, h := range []uintptr{a.bBackup, a.bSend, a.bPlayersRefresh, a.bPlayersHistory, a.bGamemode, a.bTP, a.bSummon, a.bClearInv, a.bEffApply, a.bEffClear, a.bGive, a.bArmorGive} {
 		Enable(h, on)
 	}
 	for _, h := range a.quickBtns {
@@ -1577,6 +1595,9 @@ func (a *App) setEdition(bedrock bool) {
 	comboSet(a.cbEffect, names)
 	SendMessage(a.cbEffect, CB_SETCURSEL, uintptr(sel), 0)
 	a.filterItemCombo()
+	// vanilla Bedrock /give can't carry enchantments
+	Enable(a.tGiveEnch, !bedrock)
+	Enable(a.tArmorEnch, !bedrock)
 }
 
 func (a *App) filterItemCombo() {
@@ -1653,10 +1674,41 @@ func (a *App) give() {
 	}
 	label := fmt.Sprintf("Give %d %s → {player}", qty, id)
 	if a.bedrock {
-		a.runTemplate(label, fmt.Sprintf("give {player} %s %d", id, qty))
-	} else {
-		a.runTemplate(label, fmt.Sprintf("give {player} minecraft:%s %d", id, qty))
+		a.runTemplate(label, gear.BedrockGive("{player}", id, qty))
+		return
 	}
+	var ench []gear.Ench
+	if IsOn(a.tGiveEnch) {
+		if ench = gear.MaxEnchants(id); ench != nil {
+			label = fmt.Sprintf("Give %d %s (max enchant) → {player}", qty, id)
+		}
+	}
+	a.runTemplate(label, gear.JavaGive("{player}", id, qty, ench))
+}
+
+// giveArmor gives a full armor set, max-enchanted on Java when the toggle is on.
+func (a *App) giveArmor() {
+	mat := gear.ArmorMaterials[max(0, comboSel(a.cbArmor))]
+	ench := !a.bedrock && IsOn(a.tArmorEnch)
+	var lines []string
+	for _, id := range gear.ArmorSet(mat) {
+		if a.bedrock {
+			lines = append(lines, gear.BedrockGive("{player}", id, 1))
+		} else if ench {
+			lines = append(lines, gear.JavaGive("{player}", id, 1, gear.MaxEnchants(id)))
+		} else {
+			lines = append(lines, gear.JavaGive("{player}", id, 1, nil))
+		}
+	}
+	a.runTemplate(a.armorLabel()+" → {player}", strings.Join(lines, "\n"))
+}
+
+func (a *App) armorLabel() string {
+	l := gear.ArmorMaterials[max(0, comboSel(a.cbArmor))] + " armor"
+	if !a.bedrock && IsOn(a.tArmorEnch) {
+		l += " (max enchant)"
+	}
+	return l
 }
 
 // ---------------- quick buttons ----------------

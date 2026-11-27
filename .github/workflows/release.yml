@@ -40,7 +40,7 @@ jobs:
 
       - name: Test
         if: steps.v.outputs.skip != '1'
-        run: go test ./pelican ./update
+        run: go test ./pelican ./update ./gear
 
       - name: Resources (icon, manifest, version info)
         if: steps.v.outputs.skip != '1'

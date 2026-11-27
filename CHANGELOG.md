@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0] - 2026-11-27
+### Added
+- Armor in Player Actions: give a full set (Netherite, Diamond, Iron, Copper, Golden, Chainmail, Leather) with **Max enchant** (Java: Protection IV, Thorns III, Unbreaking III, Mending, plus Respiration/Aqua Affinity, Swift Sneak, Feather Falling/Depth Strider/Soul Speed per piece). Also in the player right-click menu.
+- **Max ench.** toggle on the Give row: max-enchants swords, spears, axes, tools, bows, crossbows, tridents, maces, fishing rods, armor, elytra, shields and more (Java).
+### Notes
+- Vanilla Bedrock /give can't enchant items, so on Bedrock the enchant toggles are disabled and items are given plain.
+
 ## [1.5.1] - 2026-11-23
 ### Changed
 - Server list shows each server's egg (e.g. Paper, Bedrock) instead of the node; the left column is slightly wider to fit it. The egg also feeds the Java/Bedrock auto-detection.

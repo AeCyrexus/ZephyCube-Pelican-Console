@@ -16,7 +16,7 @@ Single `.exe` — no browser, no runtime, no installer. Talks to the Pelican **C
 | Power | Start / Stop / Restart enabled by state; **Kill** only appears when a stop hangs. Live CPU / RAM / disk / uptime. |
 | Online players | One `list` on connect, then tracked live from join/leave lines (Bedrock: `Player Spawned` / `Player disconnected`). Right-click a player for TP, Summon, gamemode, give, effect, kick/ban with reason, op, copy name or XUID. |
 | Player history | Per server: XUID, first/last seen, sessions, session and total time. Kick, ban or pardon players who are offline. |
-| Player actions | Clear inventory, Gamemode, Teleport (TP / Summon), Effect (all effects, duration, level, clear), Give (searchable item list, stack-size default). Java/Bedrock syntax auto-detected. |
+| Player actions | Clear inventory, Gamemode, Teleport (TP / Summon), Effect (all effects, duration, level, clear), Give (searchable item list, stack-size default, optional max enchant), Armor sets with max enchant. Java/Bedrock syntax auto-detected. |
 | Quick commands | Grouped buttons (Time, Weather by default), fully customizable with placeholders `{player}` `{me}` `{input}` `{server}`. |
 | Backups | Named backups; rotates the oldest unlocked backup when the limit is reached. |
 | Look | Dark (default) / light theme, compact layout for small screens. |
