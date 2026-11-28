@@ -19,8 +19,8 @@ import (
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.2"
-var appVersion = "1.6.2"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.3"
+var appVersion = "1.6.3"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -74,6 +74,7 @@ const (
 	idGiveEnch
 	idArmorEnch
 	idSilk
+	idEggFilter
 	idThorns
 
 	idCtxConnect = 3001 + iota
@@ -110,6 +111,8 @@ type App struct {
 	showHidden                      bool
 	// left
 	lv, bRefresh, bConnect     uintptr
+	cbEgg                      uintptr
+	eggItems                   []string // cbEgg rows after "All eggs"
 	lbPlayers, bPlayersRefresh uintptr
 	bPlayersHistory            uintptr
 	// right
@@ -333,6 +336,8 @@ func (a *App) build() {
 	a.bRefresh = w.Btn("Refresh", idRefresh, kNormal)
 	a.bConnect = w.Btn("Connect", idConnect, kPrimary)
 	a.bShowHidden = w.Btn("", idShowHidden, kNormal)
+	a.cbEgg = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idEggFilter, roleCombo)
+	a.fillEggCombo()
 	surf(a.bRefresh, a.bConnect, a.bShowHidden)
 
 	// players card
@@ -609,7 +614,7 @@ func (a *App) layout(cw, ch int) {
 	in := m + pad
 	iw := lw - 2*pad
 	pcTop := int32(topH)
-	listCtls := []uintptr{a.lv, a.bRefresh, a.bConnect, a.bShowHidden}
+	listCtls := []uintptr{a.lv, a.bRefresh, a.bConnect, a.bShowHidden, a.cbEgg}
 	if a.cfg.ListHidden {
 		for _, h := range listCtls {
 			Show(h, 0)
@@ -631,7 +636,9 @@ func (a *App) layout(cw, ch int) {
 			Move(a.bShowHidden, int(sc.Right)-pad-S(84), int(sc.Top)+S(3), S(84), S(18))
 		}
 		btnY := int(sc.Bottom) - pad - bh
-		Move(a.lv, in, int(sc.Top)+capH, iw, btnY-g-(int(sc.Top)+capH))
+		Move(a.cbEgg, in, int(sc.Top)+capH, iw, S(320))
+		lvTop := int(sc.Top) + capH + S(24) + g
+		Move(a.lv, in, lvTop, iw, btnY-g-lvTop)
 		half := (iw - g) / 2
 		Move(a.bRefresh, in, btnY, half, bh)
 		Move(a.bConnect, in+half+g, btnY, iw-half-g, bh)
@@ -806,6 +813,18 @@ func (a *App) onCommand(id, code int, ctl uintptr) {
 		return
 	}
 	switch id {
+	case idEggFilter:
+		if code == CBN_SELCHANGE {
+			i := comboSel(a.cbEgg)
+			a.cfg.EggFilter = ""
+			if i > 0 && i-1 < len(a.eggItems) {
+				a.cfg.EggFilter = a.eggItems[i-1]
+			}
+			_ = a.cfg.Save()
+			a.fillList()
+			a.updateCount()
+		}
+		return
 	case idEdition:
 		if code == CBN_SELCHANGE {
 			a.setEdition(comboSel(a.cbEdition) == 1)
@@ -1063,13 +1082,21 @@ func (a *App) refreshServers() {
 			for i, s := range list {
 				st[s.Identifier] = states[i]
 			}
-			sort.SliceStable(list, func(i, j int) bool { return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name) })
+			// Bedrock servers first, then by name
+			sort.SliceStable(list, func(i, j int) bool {
+				bi, bj := pelican.GuessBedrock(list[i]), pelican.GuessBedrock(list[j])
+				if bi != bj {
+					return bi
+				}
+				return strings.ToLower(list[i].Name) < strings.ToLower(list[j].Name)
+			})
 			a.servers, a.states = list, st
 			for id, ss := range a.sessions {
 				if ss.state != "" {
 					a.states[id] = ss.state
 				}
 			}
+			a.fillEggCombo()
 			a.fillList()
 			a.updateCount()
 			if a.cur == nil && a.cfg.LastServer != "" {
@@ -1093,9 +1120,14 @@ func (a *App) fillList() {
 	}
 	a.rows = a.rows[:0]
 	for _, s := range a.servers {
-		if a.showHidden || !a.isHidden(s.Identifier) {
-			a.rows = append(a.rows, s)
+		if !a.showHidden && a.isHidden(s.Identifier) {
+			continue
 		}
+		// egg filter; servers with an open console always stay visible
+		if f := a.cfg.EggFilter; f != "" && eggLabel(s) != f && a.sessions[s.Identifier] == nil {
+			continue
+		}
+		a.rows = append(a.rows, s)
 	}
 	SendMessage(a.lv, WM_SETREDRAW, 0, 0)
 	SendMessage(a.lv, LVM_DELETEALLITEMS, 0, 0)
@@ -1107,6 +1139,41 @@ func (a *App) fillList() {
 	}
 	SendMessage(a.lv, WM_SETREDRAW, 1, 0)
 	pInvalidateRect.Call(a.lv, 0, 1)
+}
+
+// fillEggCombo lists "All eggs" plus every egg on the panel, Bedrock eggs first.
+func (a *App) fillEggCombo() {
+	seen := map[string]bool{}
+	bed := map[string]bool{}
+	var eggs []string
+	for _, s := range a.servers {
+		e := eggLabel(s)
+		if e == "—" || seen[e] {
+			continue
+		}
+		seen[e] = true
+		bed[e] = pelican.GuessBedrock(s)
+		eggs = append(eggs, e)
+	}
+	if f := a.cfg.EggFilter; f != "" && !seen[f] { // keep the saved choice until the list loads
+		eggs = append(eggs, f)
+		bed[f] = strings.Contains(strings.ToLower(f), "bedrock")
+	}
+	sort.SliceStable(eggs, func(i, j int) bool {
+		if bed[eggs[i]] != bed[eggs[j]] {
+			return bed[eggs[i]]
+		}
+		return strings.ToLower(eggs[i]) < strings.ToLower(eggs[j])
+	})
+	a.eggItems = eggs
+	comboSet(a.cbEgg, append([]string{"All eggs"}, eggs...))
+	sel := 0
+	for i, e := range eggs {
+		if e == a.cfg.EggFilter {
+			sel = i + 1
+		}
+	}
+	SendMessage(a.cbEgg, CB_SETCURSEL, uintptr(sel), 0)
 }
 
 // eggLabel is the egg name for the server list, shortened ("Minecraft" dropped).
@@ -1180,6 +1247,9 @@ func (a *App) updateCount() {
 	t := fmt.Sprintf("%d servers", len(a.servers))
 	if n := a.hiddenCount(); n > 0 {
 		t += fmt.Sprintf(" · %d hidden", n)
+	}
+	if a.cfg.EggFilter != "" {
+		t += fmt.Sprintf(" · %d %s", len(a.rows), a.cfg.EggFilter)
 	}
 	SetText(a.lCount, t)
 }

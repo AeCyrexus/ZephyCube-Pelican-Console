@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.3] - 2026-11-28
+### Added
+- Egg filter above the server list ("All eggs" or one egg, remembered). Servers with an open console stay visible.
+### Changed
+- Bedrock servers are listed first (also in the egg filter).
+
 ## [1.6.2] - 2026-11-28
 ### Added
 - Spears get Lunge III with max enchant.

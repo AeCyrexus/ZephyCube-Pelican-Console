@@ -26,7 +26,8 @@ type Config struct {
 	LightMode     bool              `json:"light_mode"`
 	ListHidden    bool              `json:"list_hidden"`
 	HiddenServers []string          `json:"hidden_servers"`
-	Edition       map[string]string `json:"edition,omitempty"` // server id → java|bedrock (manual override)
+	EggFilter     string            `json:"egg_filter,omitempty"` // server list: show only this egg ("" = all)
+	Edition       map[string]string `json:"edition,omitempty"`    // server id → java|bedrock (manual override)
 	QuickVersion  int               `json:"quick_version"`
 	NoUpdateCheck bool              `json:"no_update_check"`
 	QuickCommands []QuickCmd        `json:"quick_commands"`
