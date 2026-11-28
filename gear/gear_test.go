@@ -50,6 +50,30 @@ func TestMaxEnchants(t *testing.T) {
 	}
 }
 
+func TestPick(t *testing.T) {
+	has := func(l []Ench, id string) bool {
+		for _, e := range l {
+			if e.ID == id {
+				return true
+			}
+		}
+		return false
+	}
+	if !has(Pick("netherite_spear", false, Opts{}), "lunge") {
+		t.Error("spear lunge")
+	}
+	if has(Pick("diamond_boots", false, Opts{NoThorns: true}), "thorns") || !has(Pick("diamond_boots", false, Opts{}), "thorns") {
+		t.Error("thorns opt")
+	}
+	p := Pick("netherite_pickaxe", false, Opts{SilkTouch: true})
+	if has(p, "fortune") || !has(p, "silk_touch") || has(Pick("netherite_pickaxe", false, Opts{}), "silk_touch") {
+		t.Error("silk touch opt")
+	}
+	if has(Pick("netherite_sword", false, Opts{SilkTouch: true}), "silk_touch") {
+		t.Error("silk touch on sword")
+	}
+}
+
 func TestGive(t *testing.T) {
 	got := JavaGive(`"Ae Cyrexus"`, "minecraft:Diamond_Boots", 1, []Ench{{"protection", 4}, {"mending", 1}})
 	want := `give "Ae Cyrexus" minecraft:diamond_boots[minecraft:enchantments={protection:4,mending:1}] 1`
@@ -68,7 +92,7 @@ func TestBedrockHand(t *testing.T) {
 	if BedrockToHand("Steve", "minecraft:diamond_helmet", 1) != "replaceitem entity Steve slot.weapon.mainhand 0 keep diamond_helmet 1" {
 		t.Fatal("hand")
 	}
-	for _, e := range MaxEnchantsFor("diamond_sword", true) {
+	for _, e := range Pick("diamond_sword", true, Opts{}) {
 		if e.ID == "sweeping_edge" {
 			t.Fatal("sweeping_edge on bedrock")
 		}

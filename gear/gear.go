@@ -63,7 +63,7 @@ func MaxEnchants(id string) []Ench {
 	case strings.HasSuffix(id, "_sword"):
 		return join(weapon, []Ench{{"sweeping_edge", 3}}, base)
 	case strings.HasSuffix(id, "_spear"):
-		return join(weapon, base)
+		return join(weapon, []Ench{{"lunge", 3}}, base)
 	case strings.HasSuffix(id, "_axe"):
 		return join([]Ench{{"sharpness", 5}}, tool, base)
 	case strings.HasSuffix(id, "_pickaxe"), strings.HasSuffix(id, "_shovel"), strings.HasSuffix(id, "_hoe"):
@@ -88,17 +88,26 @@ func MaxEnchants(id string) []Ench {
 	return nil
 }
 
-// MaxEnchantsFor is MaxEnchants filtered for the edition (Bedrock has no Sweeping Edge).
-func MaxEnchantsFor(id string, bedrock bool) []Ench {
-	all := MaxEnchants(id)
-	if !bedrock {
-		return all
-	}
+// Opts tweaks the max set.
+type Opts struct {
+	NoThorns  bool // drop Thorns from armor
+	SilkTouch bool // Silk Touch instead of Fortune on tools
+}
+
+// Pick is MaxEnchants with options applied, filtered for the edition
+// (Bedrock has no Sweeping Edge).
+func Pick(id string, bedrock bool, o Opts) []Ench {
 	var out []Ench
-	for _, e := range all {
-		if e.ID != "sweeping_edge" {
-			out = append(out, e)
+	for _, e := range MaxEnchants(id) {
+		switch {
+		case e.ID == "sweeping_edge" && bedrock:
+			continue
+		case e.ID == "thorns" && o.NoThorns:
+			continue
+		case e.ID == "fortune" && o.SilkTouch:
+			e = Ench{"silk_touch", 1}
 		}
+		out = append(out, e)
 	}
 	return out
 }

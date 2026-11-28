@@ -19,8 +19,8 @@ import (
 	"zephycube/pelicanconsole/update"
 )
 
-// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.1"
-var appVersion = "1.6.1"
+// appVersion is overridden at build time: -ldflags "-X main.appVersion=1.6.2"
+var appVersion = "1.6.2"
 
 const appTitle = "ZephyCube Pelican Console"
 const mainClass = "ZCPelicanMain"
@@ -73,6 +73,8 @@ const (
 	idArmorGive
 	idGiveEnch
 	idArmorEnch
+	idSilk
+	idThorns
 
 	idCtxConnect = 3001 + iota
 	idCtxHide
@@ -123,7 +125,7 @@ type App struct {
 	lEffect, cbEffect, lFor, eEffDur, lLvl, eEffLvl uintptr
 	bEffApply, bEffClear                            uintptr
 	lGive, cbItem, lQty, eGiveQty, bGive            uintptr
-	tGiveEnch                                       uintptr
+	tGiveEnch, tSilk, tThorns                       uintptr
 	lArmor, cbArmor, tArmorEnch, bArmorGive         uintptr
 	quickLabels                                     []uintptr
 	bedrock                                         bool
@@ -401,6 +403,8 @@ func (a *App) build() {
 	a.eGiveQty = w.Edit("64", 0, idGiveQty)
 	a.bGive = w.Btn("Give", idGive, kSegment)
 	a.tGiveEnch = w.Toggle("Max ench.", idGiveEnch, false)
+	a.tSilk = w.Toggle("Silk touch", idSilk, false)
+	a.tThorns = w.Toggle("Thorns", idThorns, true)
 	a.lArmor = w.Label("Armor", 0)
 	a.cbArmor = w.Ctl("COMBOBOX", "", WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWNLIST, 0, idArmorMat, roleCombo)
 	comboSet(a.cbArmor, gear.ArmorMaterials)
@@ -412,7 +416,7 @@ func (a *App) build() {
 	}
 	surf(a.lPlayer, a.bClearInv, a.lMode, a.bGamemode, a.lTele, a.bTP, a.bSummon,
 		a.lEffect, a.lFor, a.lLvl, a.bEffApply, a.bEffClear, a.lGive, a.lQty, a.bGive,
-		a.tGiveEnch, a.lArmor, a.tArmorEnch, a.bArmorGive)
+		a.tGiveEnch, a.tSilk, a.tThorns, a.lArmor, a.tArmorEnch, a.bArmorGive)
 	a.setEdition(false)
 
 	// quick card
@@ -699,8 +703,8 @@ func (a *App) layout(cw, ch int) {
 		{outlined: true, items: []layoutItem{{a.lTele, S(58), false}, {a.bTP, S(44), false}, {a.bSummon, S(70), false}}},
 		{outlined: true, items: []layoutItem{{a.lEffect, S(42), false}, {a.cbEffect, S(150), true}, {a.lFor, S(22), false}, {a.eEffDur, S(62), false},
 			{a.lLvl, S(22), false}, {a.eEffLvl, S(32), false}, {a.bEffApply, S(52), false}, {a.bEffClear, S(50), false}}},
-		{outlined: true, items: []layoutItem{{a.lGive, S(32), false}, {a.cbItem, S(190), true}, {a.lQty, S(14), false}, {a.eGiveQty, S(40), false}, {a.tGiveEnch, S(74), false}, {a.bGive, S(48), false}}},
-		{outlined: true, items: []layoutItem{{a.lArmor, S(40), false}, {a.cbArmor, S(96), true}, {a.tArmorEnch, S(94), false}, {a.bArmorGive, S(64), false}}},
+		{outlined: true, items: []layoutItem{{a.lGive, S(32), false}, {a.cbItem, S(190), true}, {a.lQty, S(14), false}, {a.eGiveQty, S(40), false}, {a.tGiveEnch, S(74), false}, {a.tSilk, S(76), false}, {a.bGive, S(48), false}}},
+		{outlined: true, items: []layoutItem{{a.lArmor, S(40), false}, {a.cbArmor, S(96), true}, {a.tArmorEnch, S(94), false}, {a.tThorns, S(64), false}, {a.bArmorGive, S(64), false}}},
 	}
 	ph, _ := flowBlocks(pBlocks, irx, 0, irw, bh, g, gi, op, false)
 	pac := RECT{int32(rx), qc.Top - int32(g) - int32(capH+ph+pad), int32(rx + rw), qc.Top - int32(g)}
@@ -1460,7 +1464,7 @@ func (a *App) bedrockHandEnchant(id string, qty int, done func(ok bool)) {
 			}
 			return
 		}
-		ench := gear.MaxEnchantsFor(id, true)
+		ench := gear.Pick(id, true, a.enchOpts())
 		SetText(a.cbPlayer, player)
 		a.runThen("Enchant "+id+" → {player}", strings.Join(gear.EnchantCmds("{player}", ench), "\n"), func(ok bool) {
 			if done != nil {
@@ -1735,7 +1739,7 @@ func (a *App) give() {
 	}
 	var ench []gear.Ench
 	if IsOn(a.tGiveEnch) {
-		if ench = gear.MaxEnchants(id); ench != nil {
+		if ench = gear.Pick(id, false, a.enchOpts()); ench != nil {
 			label = fmt.Sprintf("Give %d %s (max enchant) → {player}", qty, id)
 		}
 	}
@@ -1755,7 +1759,7 @@ func (a *App) giveArmor() {
 		if a.bedrock {
 			lines = append(lines, gear.BedrockGive("{player}", id, 1))
 		} else if ench {
-			lines = append(lines, gear.JavaGive("{player}", id, 1, gear.MaxEnchants(id)))
+			lines = append(lines, gear.JavaGive("{player}", id, 1, gear.Pick(id, false, a.enchOpts())))
 		} else {
 			lines = append(lines, gear.JavaGive("{player}", id, 1, nil))
 		}
@@ -1793,6 +1797,11 @@ func (a *App) bedrockArmorStep(mat string) {
 	})
 }
 
+// enchOpts: Thorns (Armor row) and Silk touch (Give row) apply to every max-enchant give.
+func (a *App) enchOpts() gear.Opts {
+	return gear.Opts{NoThorns: !IsOn(a.tThorns), SilkTouch: IsOn(a.tSilk)}
+}
+
 func (a *App) armorLabel() string {
 	l := gear.ArmorMaterials[max(0, comboSel(a.cbArmor))] + " armor"
 	if IsOn(a.tArmorEnch) {
@@ -1800,6 +1809,9 @@ func (a *App) armorLabel() string {
 			l += " (enchant in hand, piece by piece)"
 		} else {
 			l += " (max enchant)"
+		}
+		if !IsOn(a.tThorns) {
+			l += ", no Thorns"
 		}
 	}
 	return l

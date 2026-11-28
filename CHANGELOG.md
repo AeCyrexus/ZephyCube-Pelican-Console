@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.2] - 2026-11-28
+### Added
+- Spears get Lunge III with max enchant.
+- **Thorns** toggle on the Armor row (on by default): turn it off to leave Thorns off max-enchanted armor.
+- **Silk touch** toggle on the Give row: max-enchanted pickaxes, shovels, hoes and axes get Silk Touch instead of Fortune.
+
 ## [1.6.1] - 2026-11-27
 ### Changed
 - Bedrock max enchant now works: the item is put into the player's hand only if it's empty (`replaceitem … keep`), then `enchant <player> <enchant> <level>` runs for each enchantment. Nothing is enchanted if the hand wasn't empty. Armor sets go one piece per click (equip it, click again for the next); the feedback line says which piece is next.
